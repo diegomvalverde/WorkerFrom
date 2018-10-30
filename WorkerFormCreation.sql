@@ -67,7 +67,7 @@ create table Presence
 create table MonthlyForm
 (
 	id int identity(1,1) primary key not null,
-	idEmployee int constraint FKMonthlyFrom_Employee references Employee(id) not null,
+	idEmployee int constraint FKMonthlyForm_Employee references Employee(id) not null,
 	monthlyFormDate date not null,
 	rowSalary money not null,
 	netSalary money not null
@@ -123,7 +123,7 @@ create table EmployeeDeductionType
 create table EmployeeDeduction
 (
 	id int identity(1,1) primary key not null,
-	idEmployee int constraint FKMonthlyFrom_Employee references Employee(id) not null,
+	idEmployee int constraint FKEmployeeDeduction_Employee references Employee(id) not null,
 	idEmployeeDeductionType int constraint FKEmployeeDeduction_EmployeeDeductionType references EmployeeDeductionType(id) not null,
 	amount money not null
 );
