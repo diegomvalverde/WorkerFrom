@@ -64,58 +64,71 @@ create table Presence
 	inhability bit not null
 );
 
-create table WeeklyForm
-(
-	id int identity(1,1) not null,
-	rowSalary money not null,
-	netSalary money not null,
-	weeklyFormDate date not null
-);
-
 create table MonthlyForm
 (
-	id int identity(1,1) not null,
+	id int identity(1,1) primary key not null,
+	idEmployee int constraint FKMonthlyFrom_Employee references Employee(id) not null,
 	monthlyFormDate date not null,
 	rowSalary money not null,
 	netSalary money not null
 );
 
-create table MonthlyDeduction
+create table MovementJobHours
 (
-	id int identity(1,1) not null,
-	amount money not null
-);
-
-create table FormMovements
-(
-	id int identity(1,1) not null,
-	movementDate date not null,
-	salary money not null
+	id int identity(1,1) primary key not null
 );
 
 create table MovementType
 (
-	id int identity(1,1) not null,
+	id int identity(1,1) primary key not null,
 	movementDescription nvarchar(50)
 );
 
-create table MovementJobHours
+create table FormMovements
 (
-	id int identity(1,1) not null
+	id int identity(1,1) primary key not null,
+	idMovementType int constraint FKFormMovemets_MovementType references MovementType(id) not null,
+	movementDate date not null,
+	salary money not null
+);
+
+create table WeeklyForm
+(
+	id int identity(1,1) primary key not null,
+	idEmployee int constraint FKWeeklyForm_Employee references Employee(id) not null,
+	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
+	idFormMovements int constraint FKWeeklyForm_FromMovements references FormMovements(id) not null,
+	rowSalary money not null,
+	netSalary money not null,
+	weeklyFormDate date not null
+);
+
+
+create table MonthlyDeduction
+(
+	id int identity(1,1) primary key not null,
+	idMonthlyForm int constraint FKMonthlyDeduction_MonthlyForm references MonthlyForm(id) not null,
+	amount money not null
+);
+
+
+create table EmployeeDeductionType
+(
+	id int identity(1,1) primary key not null,
+	idMonthlyDecution int constraint FKEmployeeDeductionType_MonthlyDeduction references MonthlyDeduction(id) not null,
+	deductionName nvarchar(50),
+	amountType bit not null		-- 0 = %, 1 = fixed
 );
 
 create table EmployeeDeduction
 (
-	id int identity(1,1) not null,
+	id int identity(1,1) primary key not null,
+	idEmployee int constraint FKMonthlyFrom_Employee references Employee(id) not null,
+	idEmployeeDeductionType int constraint FKEmployeeDeduction_EmployeeDeductionType references EmployeeDeductionType(id) not null,
 	amount money not null
 );
 
-create table EmployeeDeductionType
-(
-	id int identity(1,1) not null,
-	deductionName nvarchar(50),
-	amountType bit not null		-- 0 = %, 1 = fixed
-);
+
 
 -- Este código es para no tener que reiniciar la DB si ocurre un error con MSQLMS
 use [master];
