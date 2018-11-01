@@ -31,18 +31,18 @@ create table WorkingDayType
 	workingDayEnd time not null
 );
 
+create table Job
+(
+	id int primary key identity(1,1) not null,
+	jobName nvarchar(50) not null
+);
+
 create table JobByWorkingDayType
 (
 	id int primary key identity(1,1) not null,
 	idWorkigDayType int constraint FKJobByWorkingDayType_WorkingDayType references WorkingDayType(id) not null, 
+	idJob int constraint FKJobByWorkingDayType_Job references Job(id) not null, 
 	hourlySalary money not null
-);
-
-create table Job
-(
-	id int primary key identity(1,1) not null,
-	idJobByWorkingDayType int constraint FKJob_JobByWorkingDayType references JobByWorkingDayType(id) not null,
-	jobName nvarchar(50) not null
 );
 
 create table Employee
@@ -115,9 +115,9 @@ create table MonthlyDeduction
 create table EmployeeDeductionType
 (
 	id int identity(1,1) primary key not null,
-	idMonthlyDecution int constraint FKEmployeeDeductionType_MonthlyDeduction references MonthlyDeduction(id) not null,
-	deductionName nvarchar(50),
-	amountType bit not null		-- 0 = %, 1 = fixed
+	--idMonthlyDecution int constraint FKEmployeeDeductionType_MonthlyDeduction references MonthlyDeduction(id) not null,
+	deductionName nvarchar(50) not null,
+	amountType bit 	-- 0 = %, 1 = fixed
 );
 
 create table EmployeeDeduction
