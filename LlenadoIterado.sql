@@ -59,6 +59,16 @@ insert into Job(jobName)
 	select nombre
 	from openxml(@handle, '/dataset/Puesto') with (nombre nvarchar(50));
 
+/*
+WorkingDayType upload from xml
+*/ 
+
+exec @PrepareXmlStatus= sp_xml_preparedocument @handle output, @xmlWorkingDayType;
+
+insert into WorkingDayType(workingDayEnd, workingDayName, workingDayStart)
+		select HoraFin, nombre, HoraInicio
+		from openxml(@handle, '/dataset/TipoJornadas') with (HoraFin time, nombre nvarchar(50), HoraInicio time);
+
 
 /*
 JobByWorkingDayType upload from xml
@@ -80,15 +90,6 @@ insert into EmployeeDeductionType(deductionName)
 		select nombre
 		from openxml(@handle, '/dataset/TipoDeduccion') with (nombre nvarchar(50));
 
-/*
-WorkingDayType upload from xml
-*/ 
-
-exec @PrepareXmlStatus= sp_xml_preparedocument @handle output, @xmlWorkingDayType;
-
-insert into WorkingDayType(workingDayEnd, workingDayName, workingDayStart)
-		select HoraFin, nombre, HoraIncio
-		from openxml(@handle, '/dataset/TipoJornadas') with (HoraFin time, nombre nvarchar(50), HoraInicio time);
 
 /*
 MovementType upload from xml
