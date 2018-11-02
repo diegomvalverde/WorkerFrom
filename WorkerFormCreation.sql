@@ -105,28 +105,26 @@ create table WeeklyForm
 	weeklyFormDate date not null
 );
 
+create table DeductionType
+(
+	id int identity(1,1) primary key not null,
+	deductionName nvarchar(50) not null,
+	amountType bit 	-- 0 = %, 1 = fixed
+);
 
 create table MonthlyDeduction
 (
 	id int identity(1,1) primary key not null,
+	idDeductionType int constraint FKMonthlyDeduction_DeductionType references DeductionType(id) not null,
 	idMonthlyForm int constraint FKMonthlyDeduction_MonthlyForm references MonthlyForm(id) not null,
 	amount money not null
-);
-
-
-create table EmployeeDeductionType
-(
-	id int identity(1,1) primary key not null,
-	--idMonthlyDecution int constraint FKEmployeeDeductionType_MonthlyDeduction references MonthlyDeduction(id) not null,
-	deductionName nvarchar(50) not null,
-	amountType bit 	-- 0 = %, 1 = fixed
 );
 
 create table EmployeeDeduction
 (
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKEmployeeDeduction_Employee references Employee(id) not null,
-	idEmployeeDeductionType int constraint FKEmployeeDeduction_EmployeeDeductionType references EmployeeDeductionType(id) not null,
+	idDeductionType int constraint FKEmployeeDeduction_DeductionType references DeductionType(id) not null,
 	amount money not null
 );
 
