@@ -56,7 +56,7 @@ create table Employee
 create table MovementJobHours
 (
 	id int identity(1,1) primary key not null,	
-	idFormMovements int constraint FKMovementJobHours_FormMovements references MovementJobHours(id) not null
+	idFormMovements int constraint FKMovementJobHours_FormMovements references FormMovements(id) not null
 );
 
 create table Presence
