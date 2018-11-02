@@ -53,24 +53,6 @@ create table Employee
 	employeeName nvarchar(50) not null
 );
 
-create table MovementJobHours
-(
-	id int identity(1,1) primary key not null,	
-	idFormMovements int constraint FKMovementJobHours_FormMovements references FormMovements(id) not null
-);
-
-create table Presence
-(
-	id int primary key identity(1,1) not null,
-	idEmployee int constraint FKPresence_Employee references Employee(id) not null,
-	idWorkingDayType int constraint FKPresence_WorkingDayType references WorkingDayType(id) not null,
-	idMovementJobHours int constraint FKPresence_MovementJobHours references MovementJobHours(id) not null,
-	presenceDate date not null,
-	presenceStart time not null,
-	presenceEnd time not null,
-	inhability bit not null
-);
-
 create table MonthlyForm
 (
 	id int identity(1,1) primary key not null,
@@ -92,6 +74,24 @@ create table FormMovements
 	idMovementType int constraint FKFormMovemets_MovementType references MovementType(id) not null,
 	movementDate date not null,
 	salary money not null
+);
+
+create table MovementJobHours
+(
+	id int identity(1,1) primary key not null,	
+	idFormMovements int constraint FKMovementJobHours_FormMovements references FormMovements(id) not null
+);
+
+create table Presence
+(
+	id int primary key identity(1,1) not null,
+	idEmployee int constraint FKPresence_Employee references Employee(id) not null,
+	idWorkingDayType int constraint FKPresence_WorkingDayType references WorkingDayType(id) not null,
+	idMovementJobHours int constraint FKPresence_MovementJobHours references MovementJobHours(id) not null,
+	presenceDate date not null,
+	presenceStart time not null,
+	presenceEnd time not null,
+	inhability bit not null
 );
 
 create table WeeklyForm
