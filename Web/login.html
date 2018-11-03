@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Inicio sesión</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/login.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+      function consultar()
+      {
+        $.ajax
+        (
+          {
+            data: ({functionID: 1}), //lo que se va a enviar
+            url: "http://localhost/WorkerFormWeb/conexion.php", // .php que recibe la petición
+            type:  'post', //método de envio
+            success:  function (response)
+            { //procesado de la respuesta del .php
+              $("#resultado").html(response);
+              // alert(response);
+              if(response == 1)
+              {
+                worker();
+              }
+              else
+              {
+                  alert("Su identificación no coincide con la de ningún trabajador");
+                  // alert(response);
+              }
+            }
+          }
+        );
+      }
+    </script>
+
+    <script>
+      function worker()
+      {
+        window.open("http://google.com","_self")
+      }
+    </script>
+
+  </head>
+  <body>
+      <div class="container-fluid bg-dark py-2">
+        <div class="container text-white">
+          <h2>Validación de credenciales</h2>
+          <p>Se deben ingresar las credenciales para iniciar sesión.</p>
+        </div>
+        <hr class="bg-white">
+      </div>
+
+      <form method="post" id="formulario">
+      <div class="container-fluid py-5 text-white">
+      <div class="container text-white">
+        <div class="row">
+          <div class="col-4">
+          </div>
+          <div class="col-3">
+            <label for="usr">Identificación:</label>
+            <input type="text" class="form-control" name="usr" id="usr">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-4">
+          </div>
+          <div class="col-3">
+            <!-- <label for="usr">Contraseña:</label>
+            <input type="text" class="form-control" name="pwd" id="pwd"> -->
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-3">
+          </div>
+          <div class="col-2">
+          </div>
+          <div class="col-3">
+            <br>
+            <button type="button" class="btn btn-primary" onclick="consultar();">Validar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    </form>
+  </body>
+</html>
