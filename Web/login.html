@@ -11,31 +11,33 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script>
-      function consultar()
-      {
-        $.ajax
-        (
+
+    //Function to log in o sqlserver
+    function consultar()
+    {
+      $.ajax
+      (
+        {
+          dataType: 'json',
+          data: ({functionID: 1, valorDocID: document.getElementById('valorDocID').value}), // What html is going to send to php
+          url: "http://localhost/WorkerFormWeb/conexion.php", // The .php which recives petition
+          type:  'post', // post method
+          success:  function (response)
           {
-            data: ({functionID: 1}), //lo que se va a enviar
-            url: "http://localhost/WorkerFormWeb/conexion.php", // .php que recibe la petición
-            type:  'post', //método de envio
-            success:  function (response)
-            { //procesado de la respuesta del .php
-              $("#resultado").html(response);
-              // alert(response);
-              if(response == 1)
-              {
-                worker();
-              }
-              else
-              {
-                  alert("Su identificación no coincide con la de ningún trabajador");
-                  // alert(response);
-              }
+            // processing php response
+            $("#resultado").html(response);
+            if(response == 1)
+            {
+              worker();
+            }
+            else
+            {
+              alert("Su identificación no coincide con la de ningún trabajador");
             }
           }
-        );
-      }
+        }
+      );
+    }
     </script>
 
     <script>
@@ -63,7 +65,7 @@
           </div>
           <div class="col-3">
             <label for="usr">Identificación:</label>
-            <input type="text" class="form-control" name="usr" id="usr">
+            <input type="text" class="form-control" id="valorDocID">
           </div>
         </div>
 
