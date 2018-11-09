@@ -109,7 +109,6 @@ create table DeductionType
 (
 	id int identity(1,1) primary key not null,
 	deductionName nvarchar(50) not null,
-	amountType bit 	-- 0 = %, 1 = fixed
 );
 
 create table MonthlyDeduction
