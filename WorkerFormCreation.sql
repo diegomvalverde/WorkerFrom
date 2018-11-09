@@ -71,6 +71,7 @@ create table MovementType
 create table FormMovements
 (
 	id int identity(1,1) primary key not null,
+	idWeeklyForm int constraint FKFormMovemets_WeeklyForm references WeeklyForm(id) null,
 	idMovementType int constraint FKFormMovemets_MovementType references MovementType(id) not null,
 	movementDate date not null,
 	salary money not null
@@ -99,7 +100,6 @@ create table WeeklyForm
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKWeeklyForm_Employee references Employee(id) not null,
 	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
-	idFormMovements int constraint FKWeeklyForm_FromMovements references FormMovements(id) not null,
 	rowSalary money not null,
 	netSalary money not null,
 	weeklyFormDate date not null
