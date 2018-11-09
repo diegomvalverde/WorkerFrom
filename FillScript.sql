@@ -86,7 +86,7 @@ DeductionType upload from xml
 
 exec @PrepareXmlStatus= sp_xml_preparedocument @handle output, @xmlDeductionType;
 
-insert into EmployeeDeductionType(deductionName)
+insert into DeductionType(deductionName)
 		select nombre
 		from openxml(@handle, '/dataset/TipoDeduccion') with (nombre nvarchar(50));
 
