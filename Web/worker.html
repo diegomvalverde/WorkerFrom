@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Trabajador</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/worker.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script>
+      $(document).ready(function()
+      {
+        var first = true;
+
+        // Hide menu once we know its width
+        $('#editarbonos').click(function()
+        {
+          var $menu = $('.bonosMenu');
+          if ($menu.is(':visible'))
+          {
+              // Slide away
+            $menu.animate({left: -($menu.outerWidth() + 10)}, function() {$menu.hide();});
+          }
+          else
+          {
+              // Slide in
+            $menu.show().css("left", -($menu.outerWidth() + 10)).animate({left: 0});
+          }});
+
+        // Hide menu once we know its width
+        $('#editardeducciones').click(function()
+        {
+          var $menu = $('.deduccionesMenu');
+          if ($menu.is(':visible'))
+          {
+              // Slide away
+            $menu.animate({left: -($menu.outerWidth() + 10)}, function() {$menu.hide();});
+          }
+          else
+          {
+              // Slide in
+            $menu.show().css("left", -($menu.outerWidth() + 10)).animate({left: 0});
+          }});
+
+        // Hide menu once we know its width
+        $('#editarvalor').click(function()
+        {
+          var $menu = $('.valorMenu');
+          if ($menu.is(':visible'))
+          {
+              // Slide away
+            $menu.animate({left: -($menu.outerWidth() + 10)}, function() {$menu.hide();});
+          }
+          else
+          {
+              // Slide in
+            $menu.show().css("left", -($menu.outerWidth() + 10)).animate({left: 0});
+          }});
+      });
+    </script>
+
+
+  </head>
+
+  <body>
+
+  <div class="container-fluid bg-dark py-2">
+    <div class="container text-white">
+      <h3>Trabajadores</h3>
+      <p>Se pueden hacer depositos, "retirar" dinero, consultar estados de cuenta y ver información de la cuenta.</p>
+    </div>
+    <hr class="bg-white">
+  </div>
+
+
+  // Hidden menus
+  <div class="container-fluid py-5 text-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-4">
+        <div id="editardeducciones">
+          Editar deducción
+        </div>
+        <div class="deduccionesMenu" style="display: none; position: relative;">
+
+          <div class="col-10">
+            <label for="">Identificador:</label>
+            <input type="text" class="form-control" id="employee">
+            <label for="">Empleado:</label>
+            <input type="text" class="form-control" id="employee">
+            <label for="usr">Tipo de deducción:</label>
+            <input type="text" class="form-control" name="addressee" id="addressee">
+            <label for="usr">Monto:</label>
+            <input type="text" class="form-control" name="moneyPush" id="moneyPush">
+            <br>
+            <button type="button" class="btn btn-outline-success my-2 my-sm-0">Editar</button>
+          </div>
+
+        </div>
+      </div>
+      <div class="col-4">
+        <div id="editarbonos">
+          Editar bono
+        </div>
+        <div class="bonosMenu" style="display: none; position: relative;">
+          <div class="col-10">
+            <label for="">Tipo de movimiento:</label>
+            <input type="text" class="form-control" name="movType" id="movType" onkeypress="return valida(event)">
+            <label for="usr">Destinatario:</label>
+            <input type="text" class="form-control" name="addressee" id="addressee">
+            <label for="usr">Monto:</label>
+            <input type="text" class="form-control" name="moneyPush" id="moneyPush" onkeypress="return valida(event)">
+            <br>
+            <button type="button" class="btn btn-outline-success my-2 my-sm-0">Depositar</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div id="editarvalor">
+          Editar valor por hora
+        </div>
+        <div class="valorMenu" style="display: none; position: relative;">
+
+          <div class="col-10">
+            <label for="">Tipo de movimiento:</label>
+            <input type="text" class="form-control" name="movType" id="movType" onkeypress="return valida(event)">
+            <label for="usr">Destinatario:</label>
+            <input type="text" class="form-control" name="addressee" id="addressee">
+            <label for="usr">Monto:</label>
+            <input type="text" class="form-control" name="moneyPush" id="moneyPush" onkeypress="return valida(event)">
+            <br>
+            <button type="button" class="btn btn-outline-success my-2 my-sm-0">Depositar</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+<!--
+    <div class="container-fluid py-5 text-white">
+    <div class="container">
+      <div class="row">
+        <div class="col-4">
+          <h5>Editar</h5>
+        </div>
+        <div class="col-4">
+
+        </div>
+        <div class="col-4">
+          <h5></h5>
+        </div>
+      </div>
+
+    <form method="post" id="formulario">
+      <div class="container">
+        <div class="row">
+          <div class="col-4">
+            <label for="">Tipo de movimiento:</label>
+            <input type="text" class="form-control" name="movType" id="movType" onkeypress="return valida(event)">
+            <label for="usr">Destinatario:</label>
+            <input type="text" class="form-control" name="addressee" id="addressee">
+            <label for="usr">Monto:</label>
+            <input type="text" class="form-control" name="moneyPush" id="moneyPush" onkeypress="return valida(event)">
+            <br>
+            <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick='depositar();' name="button">Depositar</button>
+          </div>
+          <div class="col-4">
+
+          </div>
+          <div class="col-4">
+            <label for="usr">Estados de cuenta:</label>
+            <textarea class="form-control" rows="5" id="accountstate"></textarea>
+            <label for="usr">Cuenta:</label>
+            <input type="text" class="form-control" name="accountId" id="accountId" onkeypress="">
+            <br>
+            <button type="button" class="btn btn-primary" onclick='estadosCuenta();' name="button1">Consultar estados</button>
+
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+          </div>
+          <div class="col-4">
+
+          </div>
+          <div class="col-4">
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </form> -->
+  </body>
+</html>
