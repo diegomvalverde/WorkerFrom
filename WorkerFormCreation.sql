@@ -68,6 +68,16 @@ create table MovementType
 	movementDescription nvarchar(50)
 );
 
+create table WeeklyForm
+(
+	id int identity(1,1) primary key not null,
+	idEmployee int constraint FKWeeklyForm_Employee references Employee(id) not null,
+	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
+	rowSalary money not null,
+	netSalary money not null,
+	weeklyFormDate date not null
+);
+
 create table FormMovements
 (
 	id int identity(1,1) primary key not null,
@@ -93,16 +103,6 @@ create table Presence
 	presenceStart time not null,
 	presenceEnd time not null,
 	inhability bit not null
-);
-
-create table WeeklyForm
-(
-	id int identity(1,1) primary key not null,
-	idEmployee int constraint FKWeeklyForm_Employee references Employee(id) not null,
-	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
-	rowSalary money not null,
-	netSalary money not null,
-	weeklyFormDate date not null
 );
 
 create table DeductionType
