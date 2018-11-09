@@ -35,17 +35,22 @@ create or alter procedure dbo.wfsp_editDeduction
 
 as
 begin
+
+	set transaction isolation level read uncommitted 
+	begin transaction;
 	begin try
 		update EmployeeDeduction 
 			set idEmployee = @employeeId, amount = @amount, idEmployeeDeductionType = @deductionType
 			where id = @deductionId;
 		set @salida = 1;
+		commit
+		set @salida = 1;
 		return 1;
 	end try
 	begin catch
+		rollback;
 		select error_message();
-		set @salida=-1;
+		set @salida = -1;
 		return -1;
 	end catch
-	
 end;
