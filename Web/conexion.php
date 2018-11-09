@@ -31,6 +31,21 @@ if(isset($_POST['functionID']) and $connectionOpen)
     $valorDocID = $_POST['valorDocID'];
     login();
   }
+  else if($function == 2)
+  {
+    $valorDocID = $_POST['valorDocID'];
+    echo $valorDocID;
+  }
+  else if($function == 3)
+  {
+    $valorDocID = $_POST['valorDocID'];
+    echo $valorDocID;
+  }
+  else if($function == 4)
+  {
+    $valorDocID = $_POST['valorDocID'];
+    echo $valorDocID;
+  }
   else
   {
     echo 0;
