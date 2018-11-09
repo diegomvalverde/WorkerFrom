@@ -129,7 +129,6 @@ create table EmployeeDeduction
 );
 
 
-
 -- Este código es para no tener que reiniciar la DB si ocurre un error con MSQLMS
 use [master];
 go
