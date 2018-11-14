@@ -87,18 +87,12 @@ create table FormMovements
 	salary money not null
 );
 
-create table MovementJobHours
-(
-	id int identity(1,1) primary key not null,	
-	idFormMovements int constraint FKMovementJobHours_FormMovements references FormMovements(id) not null
-);
-
 create table Presence
 (
 	id int primary key identity(1,1) not null,
 	idEmployee int constraint FKPresence_Employee references Employee(id) not null,
 	idWorkingDayType int constraint FKPresence_WorkingDayType references WorkingDayType(id) not null,
-	idMovementJobHours int constraint FKPresence_MovementJobHours references MovementJobHours(id) not null,
+	idFormMovement int constraint FKPresence_FormMovement references FormMovement(id) not null,
 	presenceDate date not null,
 	presenceStart time not null,
 	presenceEnd time not null,
@@ -109,7 +103,6 @@ create table DeductionType
 (
 	id int identity(1,1) primary key not null,
 	deductionName nvarchar(50) not null,
-	amountType bit 	-- 0 = %, 1 = fixed
 );
 
 create table MonthlyDeduction
