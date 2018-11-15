@@ -58,7 +58,7 @@ create table MonthlyForm
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKMonthlyForm_Employee references Employee(id) not null,
 	monthlyFormDate date not null,
-	rowSalary money not null,
+	rawSalary money not null,
 	netSalary money not null
 );
 
@@ -73,9 +73,9 @@ create table WeeklyForm
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKWeeklyForm_Employee references Employee(id) not null,
 	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
-	rowSalary money not null,
+	rawSalary money not null,
 	netSalary money not null,
-	weeklyFormDate date not null
+	weeklyFormDate date null
 );
 
 create table FormMovements
@@ -92,11 +92,16 @@ create table Presence
 	id int primary key identity(1,1) not null,
 	idEmployee int constraint FKPresence_Employee references Employee(id) not null,
 	idWorkingDayType int constraint FKPresence_WorkingDayType references WorkingDayType(id) not null,
-	idFormMovement int constraint FKPresence_FormMovement references FormMovement(id) not null,
 	presenceDate date not null,
 	presenceStart time not null,
 	presenceEnd time not null,
 	inhability bit not null
+);
+
+create table MovementJobHours
+(
+	id int primary key not null,	
+	presenceId int constraint FKMovementJobHours_presenceId references Presence(id) not null
 );
 
 create table DeductionType
