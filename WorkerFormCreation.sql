@@ -133,6 +133,12 @@ create table WorkerFormAdmins
 	adminDocId nvarchar(50) not null
 );
 
+create table Evnets
+(
+	id int identity(1,1) primary key not null,
+	eventDescription nvarchar(150)
+);
+
 go;
 insert into WorkerFormAdmins(adminName, adminDocId)
 	values('Administrador', '12345');
