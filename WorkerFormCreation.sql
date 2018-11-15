@@ -75,7 +75,7 @@ create table WeeklyForm
 	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
 	rowSalary money not null,
 	netSalary money not null,
-	weeklyFormDate date not null
+	weeklyFormDate date null
 );
 
 create table FormMovements
