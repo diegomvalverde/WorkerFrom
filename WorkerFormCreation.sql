@@ -89,7 +89,7 @@ create table FormMovements
 
 create table MovementJobHours
 (
-	id int identity(1,1) primary key not null,	
+	id int primary key not null,	
 	idFormMovements int constraint FKMovementJobHours_FormMovements references FormMovements(id) not null
 );
 
