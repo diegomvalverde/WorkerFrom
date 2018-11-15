@@ -73,7 +73,7 @@ create table WeeklyForm
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKWeeklyForm_Employee references Employee(id) not null,
 	idMonthlyForm int constraint FKWeeklyForm_MonthlyFrom references MonthlyForm(id) not null,
-	rowSalary money not null,
+	rawSalary money not null,
 	netSalary money not null,
 	weeklyFormDate date null
 );
