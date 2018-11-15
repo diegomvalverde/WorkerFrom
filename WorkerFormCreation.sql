@@ -133,16 +133,16 @@ create table WorkerFormAdmins
 	adminDocId nvarchar(50) not null
 );
 
-create table Evnets
+create table WorkerFormEvents
 (
 	id int identity(1,1) primary key not null,
 	eventDescription nvarchar(150)
 );
 
-go;
+go
 insert into WorkerFormAdmins(adminName, adminDocId)
 	values('Administrador', '12345');
-go;
+go
 -- Este código es para no tener que reiniciar la DB si ocurre un error con MSQLMS
 use [master];
 go
