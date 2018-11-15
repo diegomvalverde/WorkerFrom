@@ -121,7 +121,17 @@ create table EmployeeDeduction
 	amount money not null
 );
 
+create table WorkerFormAdmins
+(
+	id int identity(1,1) primary key not null,
+	adminName nvarchar(50) not null,
+	adminDocId nvarchar(50) not null
+);
 
+go;
+insert into WorkerFormAdmins(adminName, adminDocId)
+	values('Administrador', '12345');
+go;
 -- Este código es para no tener que reiniciar la DB si ocurre un error con MSQLMS
 use [master];
 go
