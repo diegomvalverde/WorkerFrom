@@ -58,7 +58,7 @@ create table MonthlyForm
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKMonthlyForm_Employee references Employee(id) not null,
 	monthlyFormDate date not null,
-	rowSalary money not null,
+	rawSalary money not null,
 	netSalary money not null
 );
 
