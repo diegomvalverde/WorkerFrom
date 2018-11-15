@@ -117,7 +117,6 @@ go;
 create or alter procedure dbo.wfsp_editDeduction
 @deductionId int,
 @employeeId int,
-@deductionType int,
 @amount money,
 @salida as int output
 
@@ -127,9 +126,22 @@ begin
 	set transaction isolation level read uncommitted 
 	begin transaction;
 	begin try
-		update EmployeeDeduction 
-			set idEmployee = @employeeId, amount = @amount, idEmployeeDeductionType = @deductionType
-			where id = @deductionId;
+
+		
+		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
+			select	F.idMovementType, F.idWeeklyForm, F.movementDate, F.salary * -1
+			from FormMovements F
+			where F.id = @deductionId;
+
+		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
+			select F.idMovementType, F.idWeeklyForm, F.movementDate, @amount
+			from FormMovements F
+			where F.id = @deductionId;
+
+		--update EmployeeDeduction 
+		--	set idEmployee = @employeeId, amount = @amount, idEmployeeDeductionType = @deductionType
+		--	where id = @deductionId;
+
 		set @salida = 1;
 		commit
 		set @salida = 1;
