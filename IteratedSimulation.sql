@@ -225,21 +225,48 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 			Select @jLow = @jLow + 1
 		End
 
+
+
+		-- Si es viernes
 		If DatePart(DW, @currentDate) = 6 Begin
+			-- Se cierran las planillas semanales
 			Update WeeklyForm
 			Set weeklyFormDate = @currentDate
 			Where weeklyFormDate is null
 
 			-- Hacer calculos si es necesario
 
+
+			-- Si es el último viernes del mes
 			If DatePart(MONTH, @currentDate) != DatePart(MONTH, DateAdd(Week, 1, @currentDate)) Begin 
+
+				-- TODO: Se deben aplicar las deducciones mensuales y aplicar los saldos.
+				
+				-- Se cierran las planillas mensuales
 				Update MonthlyForm
 				Set monthlyFormDate = @currentDate
 				Where monthlyFormDate is null
 
-				
+				-- Se abren las nuevas planillas mensuales
+				Select @jLow = min(id) From Employee
+				Select @jHigh = max(id) From Employee
+				While @jLow <= @jHigh Begin
+					Insert Into MonthlyForm (idEmployee, monthlyFormDate, rawSalary, netSalary)
+					Values (@jLow, null, 0, 0)
+					Select @jLow = @jLow + 1
+				End
 
 			End
+
+			-- Se abren las nuevas planillas semanales
+				Select @jLow = min(id) From Employee
+				Select @jHigh = max(id) From Employee
+				While @jLow <= @jHigh Begin
+					Select @monthlyFormId = max(id) From MonthlyForm Where idEmployee = @jLow
+					Insert Into WeeklyForm (idEmployee, weeklyFormDate, idMonthlyForm, rawSalary, netSalary)
+					Values (@jLow, null, @monthlyFormId, 0, 0)
+					Select @jLow = @jLow + 1
+				End
 
 			Select @jLow = @jLow + 1
 		End
