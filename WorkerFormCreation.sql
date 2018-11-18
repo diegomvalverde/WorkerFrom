@@ -139,6 +139,13 @@ create table WorkerFormEvents
 	eventDescription nvarchar(150)
 );
 
+create table HolyDays
+(
+	id int identity(1,1) primary key not null,
+	holyDayDescription varchar(150) not null,
+	holyDayDate date not null
+);
+
 go
 insert into WorkerFormAdmins(adminName, adminDocId)
 	values('Administrador', '12345');

@@ -43,6 +43,12 @@ set @xmlMovementType =
 	select * from openrowset(bulk 'C:\Bases\TipoMovimiento.xml', single_blob) as x
 );
 
+declare @xmlHolyDay xml
+set @xmlHolyDay = 
+(
+	select * from openrowset(bulk 'C:\Bases\Feriados.xml', single_blob) as x
+);
+
 --Variables del xml
 declare @handle int;  
 declare @PrepareXmlStatus int;  
@@ -100,6 +106,17 @@ exec @PrepareXmlStatus= sp_xml_preparedocument @handle output, @xmlMovementType;
 insert into MovementType(movementDescription)
 		select nombre
 		from openxml(@handle, '/dataset/TipoMovimiento') with (nombre nvarchar(50));
+
+
+/*
+HolyDays upload from xml
+*/ 
+
+exec @PrepareXmlStatus= sp_xml_preparedocument @handle output, @xmlHolyDay;
+
+insert into HolyDays (holyDayDescription, holyDayDate)
+		select NombreFeriado, Fecha
+		from openxml(@handle, '/dataset/Feriados') with (NombreFeriado varchar(150), Fecha date);
 
 
 
