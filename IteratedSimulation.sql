@@ -127,13 +127,15 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 		Select @jLow = min(num) From @deductions
 		Select @jHigh = max(num) From @deductions
 		While @jLow <= @jHigh Begin
-			Select @employeeId = E.id From Employee E
-			Where E.employeeDocumentId = (Select employeeDocumentId From @deductions D Where D.num = @jLow)
-			Select @deductionType = idDeductionType From @deductions D Where D.num = @jLow
+			If (Select D.cDate From @deductions D Where D.num = @jLow) = @currentDate Begin
+				Select @employeeId = E.id From Employee E
+				Where E.employeeDocumentId = (Select employeeDocumentId From @deductions D Where D.num = @jLow)
+				Select @deductionType = idDeductionType From @deductions D Where D.num = @jLow
+				Select @amount = amount From @deductions Where num = @jLow
 
-			Insert Into EmployeeDeduction (idEmployee, idDeductionType, amount)
-			Values (@employeeId, @deductionType, @amount)
-			
+				Insert Into EmployeeDeduction (idEmployee, idDeductionType, amount)
+				Values (@employeeId, @deductionType, @amount)
+			End
 			Select @jLow = @jLow + 1
 		End
 
@@ -145,16 +147,25 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 
 				Select @employeeId = E.id From Employee E
 				Where E.employeeDocumentId = (Select employeeDocumentId From @presences P Where P.num = @jLow)
-
 				Select @idWorkingDayType = idWorkingDayType From @presences Where num = @jLow
 				Select @presenceStart = presenceStart From @presences Where num = @jLow
 				Select @presenceEnd = presenceEnd From @presences Where num = @jLow
 				Select @weeklyFormId = max(id) From WeeklyForm Where idEmployee = @employeeId
 
+
+				
 				Insert Into [dbo].[Presence] (idEmployee, idWorkingDayType, inhability, presenceDate,presenceStart, presenceEnd)
 				Values (@employeeId, @idWorkingDayType,  0, @currentDate, @presenceStart, @presenceEnd)
 
+				-- TODO: Horas extra
+
 				Select @salary = [dbo].[wff_calculate_salary] (@employeeId, @presenceStart, @presenceEnd, @idWorkingDayType)
+					
+				-- MONTO A PAGAR VARÍA SI ES DOMINGO O FERIADO TODO: Feriado
+				If DATEPART(DAY, @currentDate) = 1 or Not Exists(Select * From @holydays H Where cDate = @currentDate) Begin
+					Select @salary = @salary * 2.0 -- VERIFICAR
+				End
+								
 				
 				Insert Into [dbo].[FormMovements] (idWeeklyForm, idMovementType, movementDate, salary)
 				Values (@weeklyFormId, 1, @currentDate, @salary)
@@ -162,7 +173,6 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 				Update WeeklyForm 
 				Set rawSalary = rawSalary + @salary, netsalary = netsalary + @salary
 				Where idEmployee = @employeeId and weeklyFormDate is null
-
 
 				Select @formMovementId = max(id) From FormMovements
 				Insert Into [dbo].[MovementJobHours] (id, presenceId) 
