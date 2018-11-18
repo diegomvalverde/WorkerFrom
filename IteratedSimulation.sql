@@ -85,6 +85,8 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 	Declare @presenceId int
 	Declare @formMovementId int
 	Declare @salary money
+	Declare @deductionType int
+	Declare @amount float(10)
 
 	Select @iLow = min(num) From @dates
 	Select @iHigh = max(num) From @dates
@@ -118,6 +120,20 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 				Values (@jLow, null, @monthlyFormId, 0, 0)
 
 			End
+			Select @jLow = @jLow + 1
+		End
+
+		-- Se insertan deducciones de Empleado
+		Select @jLow = min(num) From @deductions
+		Select @jHigh = max(num) From @deductions
+		While @jLow <= @jHigh Begin
+			Select @employeeId = E.id From Employee E
+			Where E.employeeDocumentId = (Select employeeDocumentId From @deductions D Where D.num = @jLow)
+			Select @deductionType = idDeductionType From @deductions D Where D.num = @jLow
+
+			Insert Into EmployeeDeduction (idEmployee, idDeductionType, amount)
+			Values (@employeeId, @deductionType, @amount)
+			
 			Select @jLow = @jLow + 1
 		End
 
@@ -204,29 +220,6 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 			Select @jLow = @jLow + 1
 		End
 
-		-- Se insertan las deducciones
-		Select @jLow = min(num) From @deductions
-		Select @jHigh = max(num) From @deductions
-		While @jLow <= @jHigh Begin
-			If (Select D.cDate From @deductions D Where D.num = @jLow) = @currentDate Begin
-				Select @employeeId = E.id From Employee E
-				Where E.employeeDocumentId = (Select employeeDocumentId From @deductions D Where D.num = @jLow)
-				
-
-				-- INCOMPLETO
-				Select @weeklyFormId = max(id) From WeeklyForm Where idEmployee = @employeeId
-				Select @salary = amount From @bonuses Where num = @jLow
-				-- Se inserta el movimiento tipo Deducción
-				Insert Into [dbo].[FormMovements] (idWeeklyForm, idMovementType, movementDate, salary)
-				Values (@weeklyFormId, 4, @currentDate, @salary)
-
-				--
-			End
-			Select @jLow = @jLow + 1
-		End
-
-
-
 		-- Si es viernes
 		If DatePart(DW, @currentDate) = 6 Begin
 			-- Se cierran las planillas semanales
@@ -241,7 +234,16 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 			If DatePart(MONTH, @currentDate) != DatePart(MONTH, DateAdd(Week, 1, @currentDate)) Begin 
 
 				-- TODO: Se deben aplicar las deducciones mensuales y aplicar los saldos.
-				
+
+				Select @jLow = min(id) From Employee
+				Select @jHigh = max(id) From Employee
+				While @jLow <= @jHigh Begin
+					
+					-- TODO: Se insertan las deducciones mensuales.
+
+					Select @jLow = @jLow + 1
+				End
+
 				-- Se cierran las planillas mensuales
 				Update MonthlyForm
 				Set monthlyFormDate = @currentDate
