@@ -22,7 +22,7 @@ begin
 	end catch
 	
 end;
-go;
+go
 
 -- Procedure to query deductions, bonus and value x hour of an employee
 create or alter procedure dbo.wfsp_bonus_deduction_valuexHourQuery
@@ -59,14 +59,14 @@ begin
 	--begin transaction;
 	begin try
 		insert @deductionsTable(id, idDeductionType, amount, employeeId)
-			select ED.id, ED.idEmployeeDeductionType, ED.amount, ED.idEmployee
+			select ED.id, ED.idDeductionType, ED.amount, ED.idEmployee
 			from EmployeeDeduction ED
 			where ED.idEmployee =  @employeeId;
 		
 		insert @bonusTable(id, idMovementType, movementDate, salary, idWeeklyForm)
 			select B.id, B.idMovementType, B.movementDate, B.salary, W.id
 			from FormMovements B, WeeklyForm W
-			where W.idEmployee = @employeeId and W.id = B.idWeekelyForm and B.idMovementType = 4;
+			where W.idEmployee = @employeeId and W.id = B.idWeeklyForm and B.idMovementType = 4;
 
 		select @hi = max(D.sec)
 			from @deductionsTable D;
@@ -111,12 +111,11 @@ begin
 		return -1;
 	end catch
 end;
-go; 
+go
 
 -- Procedure edit a deduction given to an employee
 create or alter procedure dbo.wfsp_editDeduction
 @deductionId int,
-@employeeId int,
 @amount money,
 @salida as int output
 
@@ -127,20 +126,19 @@ begin
 	begin transaction;
 	begin try
 
-		
+		insert into WorkerFormEvents(eventDescription)
+			values('Se edita una deducción mal hecha, el identificador es ' + CAST(@deductionId as nvarchar) + ' y el monto editado es de ' +
+					CAST(@amount as nvarchar));
+
 		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
 			select	F.idMovementType, F.idWeeklyForm, F.movementDate, F.salary * -1
-			from FormMovements F
-			where F.id = @deductionId;
+			from FormMovements F, WeeklyForm W
+			where F.id = @deductionId and W.id = F.id and W.weeklyFormDate is null;
 
 		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
 			select F.idMovementType, F.idWeeklyForm, F.movementDate, @amount
-			from FormMovements F
-			where F.id = @deductionId;
-
-		--update EmployeeDeduction 
-		--	set idEmployee = @employeeId, amount = @amount, idEmployeeDeductionType = @deductionType
-		--	where id = @deductionId;
+			from FormMovements F, WeeklyForm W
+			where F.id = @deductionId and (W.id = F.id and W.weeklyFormDate is null);
 
 		set @salida = 1;
 		commit
@@ -154,7 +152,7 @@ begin
 		return -1;
 	end catch
 end;
-go;
+go
 
 ---- Procedure edit a bonus given to an employee
 --create or alter procedure dbo.wfsp_editDeduction
