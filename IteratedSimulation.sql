@@ -7,16 +7,13 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 
 	Declare @operations Xml
 	Select  @operations = BulkColumn from OpenRowSet(Bulk'C:\Bases\FechaOperacion.XML',Single_blob) AS x;
-	Declare @holyDaysXml Xml
-	Select  @holyDaysXml = BulkColumn from OpenRowSet(Bulk'C:\Bases\Feriados.XML',Single_blob) AS x;
-
+	
 	Declare @dates Table (num int identity(1,1), cDate Date);
 
 	Declare @employees Table (num int identity(1,1), employeeName varchar(50), employeeDocumentId nvarchar(50), idJob int, cDate date)
 	Declare @presences Table (num int identity(1,1), employeeDocumentId nvarchar(50), idWorkingDayType int, presenceStart time(7), presenceEnd time(7), cDate date)
 	Declare @deductions Table (num int identity(1,1), employeeDocumentId nvarchar(50), idDeductionType int, amount money, cDate date)
 	Declare @bonuses Table (num int identity(1,1), employeeDocumentId nvarchar(50), amount money, cDate date)
-	Declare @holydays Table (num int identity(1,1), holyDayName varchar(50), cDate date)
 	Declare @incapacities Table (num int identity(1,1), employeeDocumentId nvarchar(50), idWorkingDayType int, cDate date)
 
 	Begin Try 
@@ -61,16 +58,6 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 	Insert Into @dates 
 		Select xCol.value('@Fecha', 'Date') as cDate
 		From @operations.nodes('/dataset/FechaOperacion') Type(xCol)
-
-	Begin Try 
-		Insert Into @holydays 
-			Select xCol.value('@NombreFeriado', 'varchar(50)') as holyDayName,
-				xCol.value('@Fecha', 'date') as cDate
-			From @operations.nodes('/dataset/FechaOperacion/NuevoEmpleado') Type(xCol)
-	End Try
-	Begin Catch
-	
-	End Catch
 
 	Declare @iLow int
 	Declare @iHigh int
@@ -162,7 +149,7 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 				Select @salary = [dbo].[wff_calculate_salary] (@employeeId, @presenceStart, @presenceEnd, @idWorkingDayType)
 					
 				-- MONTO A PAGAR VARÍA SI ES DOMINGO O FERIADO TODO: Feriado
-				If DATEPART(DAY, @currentDate) = 1 or Not Exists(Select * From @holydays H Where cDate = @currentDate) Begin
+				If DATEPART(DAY, @currentDate) = 1 or Not Exists(Select * From HolyDays H Where holyDayDate = @currentDate) Begin
 					Select @salary = @salary * 2.0 -- VERIFICAR
 				End
 								
