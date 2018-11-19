@@ -123,7 +123,7 @@ create table EmployeeDeduction
 	id int identity(1,1) primary key not null,
 	idEmployee int constraint FKEmployeeDeduction_Employee references Employee(id) not null,
 	idDeductionType int constraint FKEmployeeDeduction_DeductionType references DeductionType(id) not null,
-	amount money not null
+	amount float(10) not null
 );
 
 create table WorkerFormAdmins
@@ -137,6 +137,13 @@ create table WorkerFormEvents
 (
 	id int identity(1,1) primary key not null,
 	eventDescription nvarchar(150)
+);
+
+create table HolyDays
+(
+	id int identity(1,1) primary key not null,
+	holyDayDescription varchar(150) not null,
+	holyDayDate date not null
 );
 
 go
