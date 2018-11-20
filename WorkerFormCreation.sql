@@ -6,7 +6,12 @@ The next code is to manage a error wich occurs when you try to create an exixtin
 
 if(exists(select * from sysdatabases where name = 'WorkerForm'))
 begin
+	DECLARE @kill varchar(8000) = '';  
+	SELECT @kill = @kill + 'kill ' + CONVERT(varchar(5), session_id) + ';'  
+	FROM sys.dm_exec_sessions
+	WHERE database_id  = db_id('WorkerForm')
 
+	EXEC(@kill);
 	drop database [WorkerForm]
 	
 end
@@ -65,7 +70,7 @@ create table MonthlyForm
 create table MovementType
 (
 	id int identity(1,1) primary key not null,
-	movementDescription nvarchar(50)
+	movementDescription nvarchar(100)
 );
 
 create table WeeklyForm
