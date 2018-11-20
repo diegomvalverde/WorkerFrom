@@ -105,7 +105,7 @@ exec @PrepareXmlStatus= sp_xml_preparedocument @handle output, @xmlMovementType;
 
 insert into MovementType(movementDescription)
 		select nombre
-		from openxml(@handle, '/dataset/TipoMovimiento') with (nombre nvarchar(50));
+		from openxml(@handle, '/dataset/TipoMovimiento') with (nombre nvarchar(100));
 
 
 /*
