@@ -4,6 +4,7 @@ Go
 Create or Alter Function [dbo].[wff_calculate_salary]
 	(
 	@employeeId int,
+	@date Date,
 	@start Time(7),
 	@end Time(7),
 	@workingDayType int
@@ -11,26 +12,48 @@ Create or Alter Function [dbo].[wff_calculate_salary]
 Returns money
 As Begin
 	Declare @salaryPerHour money
+	Declare @wdStart Time(7)
+	Declare @wdEnd Time(7)
+	Declare @hoursToPay int
 	Select @salaryPerHour = hourlySalary 
 	From JobByWorkingDayType J
 	Where (Select idJob From Employee E Where id = @employeeId) = J.idJob
 	and
 	J.idWorkigDayType = @workingDayType
+	
+	Select @wdStart = workingDayStart, @wdEnd = workingDayEnd
+	From WorkingDayType Where id = @workingDayType
 
-	if @start = @end Begin
+	If @start = @end Begin
 		Select @start = workingDayStart, @end = workingDayEnd
 		From WorkingDayType Where id = @workingDayType
 	End
-		
-	Select @salaryPerHour = @salaryPerHour * DatePart(HOUR,@end ) -  DatePart(HOUR,@start)
-	Return @salaryPerHour
+	
+	If (@start < @wdStart) Begin
+		Select @start = @wdStart
+	End
+	If (@wdEnd < @end) Begin
+		Select @end = @wdEnd
+	End
 
+	-- MONTO A PAGAR VARÍA SI ES DOMINGO O FERIADO TODO: Feriado
+	If DATEPART(DW, @date) = 1 or Exists(Select 1 From HolyDays H Where holyDayDate = @date) Begin
+		Select @salaryPerHour = @salaryPerHour * 2.0
+	End		
+
+	If @start > @end 
+		Select @hoursToPay = DatePart(HOUR,@end ) + 24 -  DatePart(HOUR,@start)
+	Else
+		Select @hoursToPay = DatePart(HOUR,@end ) -  DatePart(HOUR,@start)
+
+	Return @salaryPerHour * @hoursToPay
 End
 go
 
 Create or Alter Function [dbo].[wff_calculate_extraHoursPayment]
 	(
 	@employeeId int,
+	@date Date,
 	@start Time(7),
 	@end Time(7),
 	@workingDayType int
@@ -42,27 +65,27 @@ As Begin
 	Declare @wdEnd Time(7)
 	Declare @hoursToPay int
 	Select @hoursToPay = 0
+
 	Select @salaryPerHour = hourlySalary 
 	From JobByWorkingDayType J
 	Where (Select idJob From Employee E Where id = @employeeId) = J.idJob
 	and
 	J.idWorkigDayType = @workingDayType
-
-	if @start = @end Begin
-		return 0
-	End
 		
 	Select @wdStart = workingDayStart, @wdEnd = workingDayEnd
 	From WorkingDayType Where id = @workingDayType
-
-	Select @salaryPerHour = @salaryPerHour * DatePart(HOUR,@end) -  DatePart(HOUR,@start)
-	If (@start < @wdStart) Begin
-		Select @hoursToPay = @hoursToPay + (DatePart(HOUR,@wdStart) - DatePart(HOUR,@Start))
-	End
+	
 	If (@wdEnd < @end) Begin
-		Select @hoursToPay = @hoursToPay + (DatePart(HOUR,@end) - DatePart(HOUR,@wdEnd))
+		If (@start > @end and @start > @wdEnd) or (@start < @end and @start < @wdEnd)
+			Select @hoursToPay = DatePart(HOUR,@end) - DatePart(HOUR,@wdEnd)
+		Else
+			Select @hoursToPay = 24 - (DatePart(HOUR,@end) - DatePart(HOUR,@wdEnd))
 	End
 	
-	Return @salaryPerHour * @hoursToPay
+	If DATEPART(DW, @date) = 1 or Exists(Select 1 From HolyDays H Where holyDayDate = @date) Begin
+		Select @salaryPerHour = @salaryPerHour * 2.0
+	End							
+
+	Return @salaryPerHour * @hoursToPay * 1.5
 End
 go
