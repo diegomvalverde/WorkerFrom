@@ -89,3 +89,25 @@ As Begin
 	Return @salaryPerHour * @hoursToPay * 1.5
 End
 go
+
+Create or Alter Function [dbo].[wff_fridaysOfMonth]
+	(
+	@date Date
+	)
+Returns int
+As Begin
+	Declare @numOfFridays int
+	Declare @tDate date
+	Select @numOfFridays = 0
+	Select @date = DATEADD(DAY,1 - DATEPART(DAY,@date), @date)
+	Select @tDate = @date
+
+	While DATEPART(MONTH, @date) = DATEPART(MONTH, @tDate) Begin
+		If DATEPART(DW, @tDate) = 6
+			Select @numOfFridays = @numOfFridays + 1
+		Select @tDate = DATEADD(DAY, 1, @tDate)
+	End
+
+	Return @numOfFridays
+End
+go
