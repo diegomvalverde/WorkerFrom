@@ -74,6 +74,7 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 	Declare @salary money
 	Declare @deductionType int
 	Declare @amount float(10)
+	Declare @numOfFridays int
 
 	Select @iLow = min(num) From @dates
 	Select @iHigh = max(num) From @dates
@@ -227,27 +228,73 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 		-- CIERRE DE PLANILLAS SEMANALES / MENSUALES
 		-- Si es viernes
 		If DatePart(DW, @currentDate) = 6 Begin
+			
+			-- Se aplican las deducciones por empleado.
+
+			Select @numOfFridays = [dbo].[wff_fridaysOfMonth] (@currentDate)
+
+			Select @jLow = min(id) From EmployeeDeduction
+			Select @jHigh = max(id) From EmployeeDeduction
+			While @jLow <= @jHigh Begin
+				Select @deductionType = idDeductionType From EmployeeDeduction Where id = @jLow
+				Select @employeeId = idEmployee From EmployeeDeduction Where id = @jLow
+				Select @amount = amount From EmployeeDeduction Where id = @jLow
+				-- DEDUCCIONES PORCENTUALES
+				If @deductionType = 1 or @deductionType = 2 Begin
+					Select @amount = @amount * (Select rawSalary From WeeklyForm Where idEmployee = @employeeId and weeklyFormDate is null) / 100
+					Insert Into FormMovements 
+					Select id as idWeeklyForm,
+					@deductionType + 5 as idDeductionType,
+					@currentDate as movementDate,
+					@amount as salary
+					From WeeklyForm W Where idEmployee = @employeeId and weeklyFormDate is null
+
+					Update WeeklyForm 
+					Set netSalary = netSalary - @amount
+					Where idEmployee = @employeeId and weeklyFormDate is null
+				End Else
+				-- DEDUCCIONES FIJAS
+				Begin
+					Select @amount = @amount / @numOfFridays
+					Insert Into FormMovements 
+					Select id as idWeeklyForm,
+					@deductionType + 5 as idDeductionType,
+					@currentDate as movementDate,
+					@amount as salary
+					From WeeklyForm W Where idEmployee = @employeeId and weeklyFormDate is null
+
+					Update WeeklyForm 
+					Set netSalary = netSalary - @amount
+					Where idEmployee = @employeeId and weeklyFormDate is null
+				End
+
+
+				Select @jLow = @jLow + 1
+			End
+
+			-- Se aplican los saldos de la planilla semanal a la planilla mensual.		
+			Select @jLow = min(id) From WeeklyForm Where weeklyFormDate is null
+			Select @jHigh = max(id) From WeeklyForm Where weeklyFormDate is null
+			While @jLow <= @jHigh Begin
+				
+				Update MonthlyForm
+				Set rawSalary = rawSalary + (Select rawSalary From WeeklyForm Where id = @jLow)
+				Where id = (Select idMonthlyForm From WeeklyForm Where id = @jLow)
+
+				Update MonthlyForm
+				Set netSalary = netSalary + (Select netSalary From WeeklyForm Where id = @jLow)
+				Where id = (Select idMonthlyForm From WeeklyForm Where id = @jLow)
+
+				Select @jLow = @jLow + 1
+			End
+			
 			-- Se cierran las planillas semanales
 			Update WeeklyForm
 			Set weeklyFormDate = @currentDate
 			Where weeklyFormDate is null
 
-			-- Hacer calculos si es necesario
-
-
 			-- Si es el último viernes del mes
 			If DatePart(MONTH, @currentDate) != DatePart(MONTH, DateAdd(Week, 1, @currentDate)) Begin 
-
-				-- TODO: Se deben aplicar las deducciones mensuales y aplicar los saldos.
-
-				Select @jLow = min(id) From Employee
-				Select @jHigh = max(id) From Employee
-				While @jLow <= @jHigh Begin
-					
-					-- TODO: Se insertan las deducciones mensuales.
-
-					Select @jLow = @jLow + 1
-				End
 
 				-- Se cierran las planillas mensuales
 				Update MonthlyForm
@@ -266,16 +313,15 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 			End
 
 			-- Se abren las nuevas planillas semanales
-				Select @jLow = min(id) From Employee
-				Select @jHigh = max(id) From Employee
-				While @jLow <= @jHigh Begin
-					Select @monthlyFormId = max(id) From MonthlyForm Where idEmployee = @jLow
-					Insert Into WeeklyForm (idEmployee, weeklyFormDate, idMonthlyForm, rawSalary, netSalary)
-					Values (@jLow, null, @monthlyFormId, 0, 0)
-					Select @jLow = @jLow + 1
-				End
+			Select @jLow = min(id) From Employee
+			Select @jHigh = max(id) From Employee
+			While @jLow <= @jHigh Begin
+				Select @monthlyFormId = max(id) From MonthlyForm Where idEmployee = @jLow
+				Insert Into WeeklyForm (idEmployee, weeklyFormDate, idMonthlyForm, rawSalary, netSalary)
+				Values (@jLow, null, @monthlyFormId, 0, 0)
+				Select @jLow = @jLow + 1
+			End
 
-			Select @jLow = @jLow + 1
 		End
 
 		Select @iLow = @iLow + 1
