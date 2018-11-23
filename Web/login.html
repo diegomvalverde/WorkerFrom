@@ -18,33 +18,31 @@
       $.ajax
       (
         {
-          dataType: 'json',
-          data: ({functionID: 1, valorDocID: document.getElementById('valorDocID').value}), // What html is going to send to php
-          url: "http://localhost/WorkerFormWeb/conexion.php", // The .php which recives petition
+            data:  $("#formulario").serialize(), //lo que se va a enviar
+            url: "http://localhost/workerform/conexion.php", // The .php which recives petition
           type:  'post', // post method
           success:  function (response)
           {
             // processing php response
-            $("#resultado").html(response);
+            // $("#resultado").html(response);
+            //   alert(response);
             if(response == 1)
             {
-              worker();
+              window.open("http://localhost/workerform/empleado.html","_self")
+            }
+            else if(response == 2)
+            {
+                window.open("http://localhost/workerform/admin.html","_self")
+
             }
             else
             {
-              alert("Su identificación no coincide con la de ningún trabajador");
+              alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
             }
           }
         }
       );
     }
-    </script>
-
-    <script>
-      function worker()
-      {
-        window.open("http://google.com","_self")
-      }
     </script>
 
   </head>
@@ -64,8 +62,10 @@
               <div class="col-4">
               </div>
               <div class="col-3">
-                <label for="usr">Identificación:</label>
-                <input type="text" class="form-control" id="valorDocID">
+                <label>Identificación:</label>
+                  <label>
+                      <input type="text" class="form-control" name="valorDocID">
+                  </label>
               </div>
             </div>
 
@@ -90,7 +90,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
   </body>
 </html>

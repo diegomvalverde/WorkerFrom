@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Empleado</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="">
+        function consultJob()
+        {
+            $.ajax
+            (
+                {
+                    data:  $("#formulario").serialize(), //lo que se va a enviar
+                    url: "http://localhost/workerform/conexion.php", // The .php which recives petition
+                    type:  'post', // post method
+                    success:  function (response)
+                    {
+                        // processing php response
+                        // $("#resultado").html(response);
+                          alert(response);
+                        if(response == 1)
+                        {
+                            window.open("http://localhost/workerform/empleado.html","_self")
+                        }
+                        else if(response == 2)
+                        {
+                            window.open("http://localhost/workerform/admin.html","_self")
+
+                        }
+                        else
+                        {
+                            alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
+                        }
+                    }
+                }
+            );
+        }
+    </script>
+</head>
+<body>
+    <div class="container-fluid bg-dark py-2">
+        <div class="container text-white">
+            <h3>Trabajadores</h3>
+            <p>Se pueden consultar toda la vida laboral de un trabajador apartir de de una fecha.</p>
+        </div>
+        <hr class="bg-white">
+    </div>
+    <form method="post" id="formulario">
+
+        <div class="container-fluid py-5 text-white">
+            <div class="container-fluid py-5 text-white">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-3">
+                            <!--<label for="deductionsTextArea">Posible deducción a editar</label>-->
+                            <!--<textarea name="name" rows="8" cols="30" id="deductionsTextArea"></textarea>-->
+                        </div>
+                        <div class="col-6">
+                            <label for="bonusTextArea">Vida laboral del trabajador</label>
+                            <br>
+                            <textarea name="name" rows="8" cols="52" id="bonusTextArea"></textarea>
+                            <br>
+                            <label>
+                                <input type="text" class="form-control" placeholder="Identificación" name="idemployeeJob">
+                            </label>
+                            <label>
+                                <input type="text" class="form-control" placeholder="Fecha" name="valorDocIDQuery">
+                            </label>
+                            <button class="btn btn-outline-success my-2 my-sm-0" type="submit" onclick="consultJob();">Buscar</button>
+
+                        </div>
+                        <div class="col-3">
+                            <!--<label for="valueTextArea">Valor por hora de empleado</label>-->
+                            <!--<textarea name="name" rows="8" cols="30" id="valueTextArea"></textarea>-->
+                            <!--<br>-->
+
+                        </div>
+                    </div>
+                </div>
+
+
+                </div>
+            </div>
+    </form>
+</body>
+</html>
