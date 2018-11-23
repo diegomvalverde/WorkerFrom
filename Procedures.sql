@@ -226,5 +226,15 @@ go
 --		return -1;
 --	end catch
 --end;
+
+
+Create or Alter Procedure wfsp_getAguinaldo
+@docIdEmpleado nvarchar(50)
+As
+Begin
+	Return Select Top 11 Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null Order By M.monthlyFormDate 
+End
+Go
+
 use master
 go
