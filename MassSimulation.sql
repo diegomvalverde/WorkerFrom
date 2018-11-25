@@ -119,8 +119,8 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		Select E.id as idEmployee,
 		idWorkingDayType,
 		@currentDate as presenceDate,
-		Convert(time(7), '0:00') as presenceStart,
-		Convert(time(7), '0:00') as presenceEnd,
+		'0:00' as presenceStart,
+		'0:00' as presenceEnd,
 		1 as inhability
 		From Employee E join @incapacities ic on E.employeeDocumentId = ic.employeeDocumentId 
 		Where ic.cDate = @currentDate
@@ -151,17 +151,17 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		Select W.id as idWeeklyForm,
 		3 as idMovementType,
 		@currentDate as movementDate,
-		[dbo].[wff_calculate_salary] (E.id, @currentDate, Convert(time(7), '0:00'), Convert(time(7), '0:00'), ti.idWorkingDayType) as salary 
+		[dbo].[wff_calculate_salary] (E.id, @currentDate, '0:00', '0:00', ti.idWorkingDayType) as salary 
 		From WeeklyForm W Join Employee E on W.idEmployee = E.id join @incapacities ti on E.employeeDocumentId = ti.employeeDocumentId 
 		Where ti.cDate = @currentDate
 
 		-- Movimientos Hora
 
-		--Insert Into MovementJobHours
-		--Select M.id as id,
-		--P.id as presenceId
-		--From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm Join Presence P On W.idEmployee = P.idEmployee
-		--Where P.presenceDate = @currentDate
+		Insert Into MovementJobHours
+		Select M.id as id,
+		P.id as presenceId
+		From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm Join Presence P On W.idEmployee = P.idEmployee
+		Where P.presenceDate = @currentDate
 
 		-- Se insertan los bonos
 		
@@ -174,20 +174,13 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		Where td.cDate = @currentDate
 
 		Update WF
-		Set rawSalary = R.credits
+		Set rawSalary = rawSalary + R.credits, netSalary = netSalary + R.credits
 		From WeeklyForm WF
 		Join 
 		(Select W.id, sum(M.salary) as credits
 		From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm 
-		Where M.idMovementType < 6 and weeklyFormDate is null Group By W.id) R On WF.id = R.id
-			
-		Update WF
-		Set netSalary = netSalary - R.deductions
-		From MonthlyForm WF
-		Join 
-		(Select W.id, sum(M.salary) as deductions
-		From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm 
-		Where M.idMovementType > 5 and weeklyFormDate is null Group By W.id) R On WF.id = R.id
+		Where M.idMovementType < 6 and M.movementDate = @currentDate and weeklyFormDate is null Group By W.id) R On WF.id = R.id
+
 
 		-- CIERRE DE PLANILLAS SEMANALES / MENSUALES
 		-- Si es viernes
@@ -219,12 +212,12 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 			-- Se aplican los saldos netos a la planilla semanal
 
 			Update WF
-			Set netSalary = netSalary - R.deductions
-			From MonthlyForm WF
+			Set netSalary = netSalary - R.credits
+			From WeeklyForm WF
 			Join 
-			(Select W.id, sum(M.salary) as deductions
+			(Select W.id, sum(M.salary) as credits
 			From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm 
-			Where M.idMovementType > 5 and weeklyFormDate is null Group By W.id) R On WF.id = R.id
+			Where M.idMovementType > 5 and M.movementDate = @currentDate and weeklyFormDate is null Group By W.id) R On WF.id = R.id
 
 			-- Se aplican los saldos de la planilla semanal a la planilla mensual.		
 			
@@ -253,6 +246,10 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 			-- Si es el último viernes del mes
 			If DatePart(MONTH, @currentDate) != DatePart(MONTH, DateAdd(Week, 1, @currentDate)) Begin 
 
+				-- Se borran las deducciones mensuales.
+
+				Delete From EmployeeDeduction
+				
 				-- Se cierran las planillas mensuales
 				Update MonthlyForm
 				Set monthlyFormDate = @currentDate
