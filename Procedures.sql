@@ -258,6 +258,7 @@ begin
 end;
 go
 
+<<<<<<< HEAD
 -- Procedure the value of an employee
 create or alter procedure wfsp_valuesQuery
 @salida as nvarchar(3000) output
@@ -284,6 +285,46 @@ begin
 	end catch
 end;
 go
+=======
+---- Procedure edit a bonus given to an employee
+--create or alter procedure dbo.wfsp_editDeduction
+--@deductionId int,
+--@employeeId int,
+--@deductionType int,
+--@amount money,
+--@salida as int output
+
+--as
+--begin
+
+--	set transaction isolation level read uncommitted 
+--	begin transaction;
+--	begin try
+--		update EmployeeDeduction 
+--			set idEmployee = @employeeId, amount = @amount, idEmployeeDeductionType = @deductionType
+--			where id = @deductionId;
+--		set @salida = 1;
+--		commit
+--		set @salida = 1;
+--		return 1;
+--	end try
+--	begin catch
+--		rollback;
+--		select error_message();
+--		set @salida = -1;
+--		return -1;
+--	end catch
+--end;
+
+
+Create or Alter Procedure wfsp_getAguinaldo
+@docIdEmpleado nvarchar(50)
+As
+Begin
+	Return Select Top 11 Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null Order By M.monthlyFormDate 
+End
+Go
+>>>>>>> c7ee56990482db1cb1b632367e39308a61bdf266
 
 use master
 go
