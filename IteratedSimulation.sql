@@ -296,6 +296,10 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 			-- Si es el último viernes del mes
 			If DatePart(MONTH, @currentDate) != DatePart(MONTH, DateAdd(Week, 1, @currentDate)) Begin 
 
+				-- Se borran las deducciones mensuales.
+
+				Delete From EmployeeDeduction
+
 				-- Se cierran las planillas mensuales
 				Update MonthlyForm
 				Set monthlyFormDate = @currentDate
