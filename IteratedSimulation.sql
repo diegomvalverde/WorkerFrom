@@ -328,3 +328,8 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 	End
 	Select * From Employee
 End
+
+go
+
+exec wfsp_IteratedSimulation
+go
