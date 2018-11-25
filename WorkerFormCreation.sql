@@ -141,7 +141,7 @@ create table WorkerFormAdmins
 create table WorkerFormEvents
 (
 	id int identity(1,1) primary key not null,
-	eventDescription nvarchar(150)
+	eventDescription nvarchar(500)
 );
 
 create table HolyDays
