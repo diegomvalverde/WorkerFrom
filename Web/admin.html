@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
@@ -23,11 +23,11 @@
                     success:  function (response)
                     {
                         // processing php response
-                        // $("#resultado").html(response);
-                        alert("El response es : " + response);
-                        if(response !== "")
+                        // $("#bonusTextArea").html(response);
+                        // alert("El response es : " + response);
+                        if(response != "")
                         {
-                            // alert(resonse);
+                            document.getElementById('bonusTextArea').value=response;
                         }
                         else
                         {
@@ -39,32 +39,108 @@
         }
     </script>
       <script>
-          function generalEdit()
+          //Function to log in o sqlserver
+          function consultarValores()
           {
               $.ajax
               (
                   {
-                      data:  $("#formulario").serialize(), //lo que se va a enviar
+                      data:  $("#formulario2").serialize(), //lo que se va a enviar
+                      url: "http://localhost/workerform/conexion.php", // The .php which recives petition
+                      type:  'post', // post method
+                      success:  function (response)
+                      {
+                          // processing php response
+                          //   alert(response);
+                          if(response != "")
+                          {
+                              document.getElementById('valuetextArea').value=response;
+                          }
+                          // else
+                          // {
+                          //     alert("Su identificación no coincide con la de ningún trabajador");
+                          // }
+                      }
+                  }
+              );
+          }
+      </script>
+      <script>
+          function editBonus()
+          {
+              $.ajax
+              (
+                  {
+                      data:  $("#formulario1").serialize(), //lo que se va a enviar
                       url: "http://localhost/workerform/conexion.php", // The .php which recives petition
                       type:  'post', // post method
                       success:  function (response)
                       {
                           // processing php response
                           // $("#resultado").html(response);
-                            alert(response);
+                          // alert(response);
                           if(response == 1)
                           {
-                              window.open("http://localhost/workerform/empleado.html","_self")
                           }
-                          else if(response == 2)
+                          // else
+                          // {
+                          //     alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
+                          // }
+                      }
+                  }
+              );
+          }
+      </script>
+      <script>
+          function editDeduction()
+          {
+              $.ajax
+              (
+                  {
+                      data:  $("#formulario0").serialize(), //lo que se va a enviar
+                      url: "http://localhost/workerform/conexion.php", // The .php which recives petition
+                      type:  'post', // post method
+                      success:  function (response)
+                      {
+                          // processing php response
+                          // $("#resultado").html(response);
+                          // alert(response);
+                          if(response == 1)
                           {
-                              window.open("http://localhost/workerform/admin.html","_self")
-
+                          }
+                          // else
+                          // {
+                          //     alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
+                          // }
+                      }
+                  }
+              );
+          }
+      </script>
+      <script>
+          function editValue()
+          {
+              $.ajax
+              (
+                  {
+                      data:  $("#formulario3").serialize(), //lo que se va a enviar
+                      url: "http://localhost/workerform/conexion.php", // The .php which recives petition
+                      type:  'post', // post method
+                      success:  function (response)
+                      {
+                          // processing php response
+                          // $("#resultado").html(response);
+                          // alert(response);
+                          if(response == 1)
+                          {
+                              alert("Se ha editado el valor de forma correcta.");
+                              consultarValores();
                           }
                           else
                           {
-                              alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
+                              alert("No se ha podido editar el valor de forma correcta, intente de nuevo.");
                           }
+
                       }
                   }
               );
@@ -72,16 +148,16 @@
       </script>
   <body>
 
-  <div class="container-fluid bg-dark py-2">
-    <div class="container text-white">
-      <h3>Administradores</h3>
-      <p>Se pueden editar bonos, deducciones y el valor por hora de un usuario.</p>
-    </div>
-    <hr class="bg-white">
-  </div>
-
-  <form method="post" id="formulario">
-
+      <div class="container-fluid bg-dark py-2">
+        <div class="container text-white">
+            <form method="post" id="formulario2" name="hola">
+              <h3>Administradores</h3>
+              <p>Se pueden editar bonos, deducciones y el valor por hora de un usuario.</p>
+                <input type="hidden" name="hidden" value=""/>
+            </form>
+        </div>
+        <hr class="bg-white">
+      </div>
     <div class="container-fluid py-5 text-white">
     <div class="container">
       <div class="row">
@@ -90,74 +166,84 @@
       </div>
         <div class="container">
             <div class="row">
-                <div class="col-4">
-                    <label for="deductionsTextArea">Posible deducción a editar</label>
-                    <textarea name="name" rows="8" cols="30" id="deductionsTextArea"></textarea>
+                <div class="col-3">
+                    <form method="post" id="formulario">
+                      <label for="bonusTextArea">Posibles ediciones por empleado</label>
+                      <textarea rows="8" cols="70" id="bonusTextArea"></textarea>
+                      <br>
+                      <input type="text" class="form-control" placeholder="Identificación" name="valorDocIDQuery">
+                      <br>
+                      <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="consultar();">Buscar</button>
+                    </form>
                 </div>
-                <div class="col-4">
-                    <label for="bonusTextArea">Posible bono a editar</label>
-                    <textarea name="name" rows="8" cols="30" id="bonusTextArea"></textarea>
-                    <br>
-                    <label>
-                        <input type="text" class="form-control" name="valorDocIDQuery">
-                    </label>
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" onclick="consultar();">Buscar</button>
+                <div class="col-5">
+
 
                 </div>
-                <div class="col-4">
-                    <label for="valueTextArea">Valor por hora de empleado</label>
-                    <textarea name="name" rows="8" cols="30" id="valueTextArea"></textarea>
-                    <br>
-
+                <div class="col-3">
+                  <label for="valuetextArea">Valores por trabajos/jornadas</label>
+                    <textarea rows="10" cols="55" id="valuetextArea"></textarea>
                 </div>
             </div>
         </div>
 
 
     </div>
-  <div class="container-fluid py-5 text-white">
+
+    <div class="container-fluid py-5 text-white">
           <div class="container">
               <div class="row">
 
               </div>
           </div>
+
           <div class="container">
               <div class="row">
                   <div class="col-3">
-                      <label >Editar deducción</label>
-                      <input type="text" class="form-control" placeholder="Identificador" name="idDeduction">
-                      <br>
-                      <input type="text" class="form-control" placeholder="Monto" name="deductionAmount">
-
+                      <form method="post" id="formulario0">
+                          <label >Editar deducción</label>
+                          <input type="text" class="form-control" placeholder="Id empleado" name="idEmployeeDeduction">
+                          <br>
+                          <input type="text" class="form-control" placeholder="Identificador" name="idDeduction">
+                          <br>
+                          <input type="text" class="form-control" placeholder="Monto" name="deductionAmount">
+                          <br>
+                          <button type="button" class="btn btn-primary" onclick="editDeduction();">Editar</button>
+                      </form>
                   </div>
                   <div class="col-1">
 
                   </div>
                   <div class="col-3 col-md-offset-5">
-                      <label >Editar bono</label>
-                      <input type="text" class="form-control" placeholder="Id empleado" name="idBonus">
-                      <br>
-                      <input type="text" class="form-control" placeholder="Monto" name="bonusAmount">
-                      <br>
-                      <button type="button" class="btn btn-primary" onclick="generalEdit();">Editar</button>
+                      <form method="post" id="formulario1">
+                          <label >Editar bono</label>
+                          <input type="text" class="form-control" placeholder="Id empleado" name="idEmployeeBonus">
+                          <br>
+                          <input type="text" class="form-control" placeholder="Id bono" name="idBonus">
+                          <br>
+                          <input type="text" class="form-control" placeholder="Monto" name="bonusAmount">
+                          <br>
+                          <button type="button" class="btn btn-primary" onclick="editBonus();">Editar</button>
+                      </form>
                   </div>
                   <div class="col-1">
 
                   </div>
                   <div class="col-3">
-                      <label >Editar valor por hora</label>
-                      <input type="text" class="form-control" placeholder="Id empleado" name="idEmployeeValue">
-                      <br>
-                      <input type="text" class="form-control" placeholder="Nuevo valor" name="valueEmployee">
-                      <br>
-
+                      <form method="post" id="formulario3">
+                          <label >Editar valor por hora</label>
+                          <input type="text" class="form-control" placeholder="Id valor" name="idEmployeeValue">
+                          <br>
+                          <input type="text" class="form-control" placeholder="Nuevo valor" name="valueEmployee">
+                          <br>
+                          <button type="button" class="btn btn-primary" onclick="editValue();">Editar</button>
+                      </form>
                   </div>
               </div>
           </div>
 
 
       </div>
-
-  </form>
+      <script>consultarValores();</script>
   </body>
 </html>

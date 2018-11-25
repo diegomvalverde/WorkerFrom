@@ -2,93 +2,70 @@
 use WorkerForm
 go
 
---create or alter procedure dbo.wfsp_generalQuery
---@employeeId nvarchar(50),
---@salida as varchar(500) output
---as
---begin
+set dateformat dmy;  
+go
 
---	--declare @deductionsTable table
---	--(
---	--	sec int identity(1,1),
---	--	id int,
---	--	idWeeklyForm int,
---	--	idMovementType int,
---	--	movementDate date ,
---	--	salary money
---	--)
+create or alter procedure dbo.wfsp_generalQuery
+@employeeId nvarchar(50),
+@salida as nvarchar(1000) output
 
---	--declare @bonusTable table
---	--(
---	--	sec int identity(1,1),
---	--	id int,
---	--	idWeeklyForm int,
---	--	idMovementType int,
---	--	movementDate date ,
---	--	salary money
---	--)
+as
+begin
+begin try
+	declare @low int = 1;
+	declare @hi int = -1;
 
---	declare @low int = 1;
---	declare @hi int;
---	--set transaction isolation level read uncommitted 
---	--begin transaction;
---	select @salida = 'hola';
---		select @hi = max(F.id)
---			from FormMovements F, WeeklyForm W
---			where W.id = F.idWeeklyForm and W.idEmployee = @employeeId and F.idMovementType = 4;
---	select @salida = 'hola2';
+		select @hi = max(F.id)
+			from (FormMovements F inner join WeeklyForm W on W.id = F.idWeeklyForm) join Employee E on W.idEmployee = E.id
+			where idMovementType = 4 and weeklyFormDate is null and employeeDocumentId = @employeeId;
+	
+		select @salida = @salida + 'Posible bono a editar:' + CHAR(10);
+		if(@hi = -1 or @hi is null)
+			begin
+				select @salida = @salida + 'No hay bonos que se puedan editar' + char(10);
+			end
+		else
+			begin
+			select @salida = @salida + 'Identificador de deduccion: ' + cast(@hi as nvarchar) + char(10)
+													+ 'Identificador de tipo de deduccion: ' + cast(D.idMovementType as nvarchar) + char(10)
+													+ 'Monto: ' + cast(D.salary as nvarchar) + char(10)
+													+  'Identificación de emplado: ' + @employeeId + char(10)
+				from FormMovements D
+				where D.id = @hi;
+			end;	
+		set @hi = -1;
 
---		set @salida = 'Identificador de deducción: ' + cast(20 as nvarchar)
---												+ 'Identificador de tipo de movimiento: ' 
+		select @hi = max(F.id)
+			from (FormMovements F inner join WeeklyForm W on W.id = F.idWeeklyForm) join Employee E on W.idEmployee = E.id
+			where (idMovementType > 5) and weeklyFormDate is null and employeeDocumentId = @employeeId;
 
 
---		--insert @bonusTable(idMovementType, idWeeklyForm, movementDate, salary, id)
---		--	select F.idMovementType, F.idWeeklyForm, F.movementDate, F.salary, F.id
---		--	from FormMovements F, WeeklyForm W
---		--	where F.id = max(F.id)
+		select @salida = @salida + char(10);
 
---		--insert @bonusTable(id, idMovementType, movementDate, salary, idWeeklyForm)
---		--	select B.id, B.idMovementType, B.movementDate, B.salary, W.id
---		--	from FormMovements B, WeeklyForm W
---		--	where W.idEmployee = @employeeId and W.id = B.idWeeklyForm and B.idMovementType = 4;
+		select @salida = @salida + 'Posible deducción a editar' + char(10);
 
---		--select @hi = max(D.sec)
---		--	from @deductionsTable D;
+		if(@hi = -1 or @hi is null)
+			begin
+				select @salida = @salida + 'No hay deducciones que se puedan editar' + char(10);
+			end
+		else
+			begin
+				select @salida = @salida + 'Identificador de deduccion: ' + cast(@hi as nvarchar) + char(10)
+												+ 'Identificador de tipo de deduccion: ' + cast(D.idMovementType as nvarchar) + char(10)
+												+ 'Monto: ' + cast(D.salary as nvarchar) + char(10)
+												+  'Identificación de emplado: ' + @employeeId + char(10)
+					from FormMovements D
+					where D.id = @hi;
+			end;
 
---		--while(@low < @hi)
---		--	begin
---		--		select @salida = @salida + 'Identificador de deducción: ' + cast(D.id as nvarchar) + char(10)
---		--										+ 'Identificador de tipo de deducción: ' + cast(D.idDeductionType as nvarchar) + char(10)
---		--										+ 'Monto: ' + cast(D.amount as nvarchar) + char(10)
---		--										+  'Identificación de emplado: ' + cast(D.employeeId as nvarchar) + char(10)
---		--										+ CHAR(10)
---		--			from @deductionsTable D
---		--			where @low = D.sec;
---		--		set @low = @low + 1;
---		--	end;
---		--select @salida = @salida +'diego';
---		--set @low = 1;
---		--select @hi = max(B.sec)
---		--	from @bonusTable B;
+		return 1;
+	end try
+	begin catch
+		return -1
+	end catch;
+end;
+go
 
---		--while(@low < @hi)
---		--	begin
---		--		select @salida = @salida + 'Identificador de bono: ' + cast(B.id as nvarchar) + char(10)
---		--										+ 'Identificador de planilla semanal: ' + cast(B.idWeeklyForm as nvarchar) + char(10)
---		--										+ 'Identificador del tipo de movimiento: ' + cast(B.idMovementType as nvarchar) + char(10)
---		--										+  'Fecha de movimiento: ' + cast(B.movementDate as nvarchar) + char(10)
---		--										+  'Monto del bono: ' + cast(B.salary as nvarchar) + char(10)
---		--										+ CHAR(10)
---		--			from @bonusTable B
---		--			where @low = B.sec;
---		--		set @low = @low + 1;
---		--	end;
---		--select @salida = 'Valor por hora: ' + hourlySalary
---		--	from Employee E
---		--	join JobByWorkingDayType J on E.idJob = J.idJob;
-		
---end;
---go
 -- Procedure to log in on web page
 create or alter procedure dbo.wfsp_login
 @valorDocId nvarchar(50),
@@ -119,20 +96,27 @@ go
 
 -- Procedure edit a deduction given to an employee
 create or alter procedure wfsp_editDeduction
+@employeeId nvarchar(50),
 @deductionId int,
 @amount money,
 @salida as int output
 
 as
 begin
-
+	declare @hi int;
 	set transaction isolation level read uncommitted 
 	begin transaction;
 	begin try
 
+		select @hi = max(F.id)
+			from (FormMovements F inner join WeeklyForm W on W.id = F.idWeeklyForm) join Employee E on W.idEmployee = E.id
+			where (idMovementType = 4) and weeklyFormDate is null and employeeDocumentId = @employeeId;
+
 		insert into WorkerFormEvents(eventDescription)
-			values('Se edita una deducción mal hecha, el identificador es ' + CAST(@deductionId as nvarchar) + ' y el monto editado es de ' +
-					CAST(@amount as nvarchar));
+			select 'Se edita una deducción mal hecha al empleado con la identificación' + cast(idEmployee as nvarchar) + ', el identificador de ls deducción es ' + CAST(@deductionId as nvarchar) + ' y el nuevo monto es de ' +
+					CAST(@amount as nvarchar)
+			from FormMovements F, WeeklyForm W
+			where F.id = @deductionId and W.id = F.id and W.weeklyFormDate is null;
 
 		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
 			select	F.idMovementType, F.idWeeklyForm, F.movementDate, F.salary * -1
@@ -141,8 +125,9 @@ begin
 
 		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
 			select F.idMovementType, F.idWeeklyForm, F.movementDate, @amount
-			from FormMovements F, WeeklyForm W
-			where F.id = @deductionId and (W.id = F.id and W.weeklyFormDate is null);
+			from (FormMovements F inner join WeeklyForm W on W.id = F.idWeeklyForm)
+			where idMovementType > 4 and (weeklyFormDate is null) and F.id = @deductionId and @deductionId = @hi;
+
 
 		commit
 		set @salida = 1;
@@ -151,24 +136,29 @@ begin
 	begin catch
 		rollback;
 		select error_message();
-		set @salida = -1;
+		set @salida = 0;
 		return -1;
 	end catch
 end;
 go
 
--- Procedure edit a deduction given to an employee
+-- Procedure edit a given bonus to an employee
 create or alter procedure wfsp_editBonus
+@employeeId nvarchar(50),
 @deductionId int,
 @amount money,
 @salida as int output
 
 as
 begin
-
+	declare @hi int;
 	set transaction isolation level read uncommitted 
 	begin transaction;
 	begin try
+
+		select @hi = max(F.id)
+			from (FormMovements F inner join WeeklyForm W on W.id = F.idWeeklyForm) join Employee E on W.idEmployee = E.id
+			where (idMovementType = 4) and weeklyFormDate is null and employeeDocumentId = @employeeId;
 
 		insert into WorkerFormEvents(eventDescription)
 			values('Se edita un bono mal hecho, el identificador es ' + CAST(@deductionId as nvarchar) + ' y el monto editado es de ' +
@@ -181,8 +171,8 @@ begin
 
 		insert into FormMovements(idMovementType, idWeeklyForm, movementDate, salary)
 			select F.idMovementType, F.idWeeklyForm, F.movementDate, @amount
-			from FormMovements F, WeeklyForm W
-			where F.id = @deductionId and (W.id = F.id and W.weeklyFormDate is null);
+			from (FormMovements F inner join WeeklyForm W on W.id = F.idWeeklyForm)
+			where idMovementType = 4 and (weeklyFormDate is null) and F.id = @deductionId and @deductionId = @hi;
 
 		commit
 		set @salida = 1;
@@ -197,6 +187,105 @@ begin
 end;
 go
 
+-- Procedure consult all the Forms of an employee and the movements
+create or alter procedure wfsp_employeeFormsQuery
+@employeeId nvarchar(50),
+@salida as nvarchar(3000) output
+
+as
+begin
+
+	begin try
+
+		select @salida = @salida + 'Las planillas semanales son:' + char(10) + char(10);
+
+		select @salida = @salida + 'Nombre de empleado: ' + cast(employeeName as nvarchar) + char(10)
+								+ 'Id plantilla: ' + cast(W.id as nvarchar) + char(10)
+								+ 'Fecha de plantilla: ' + cast(weeklyFormDate as nvarchar) + char(10)
+								+ 'Salario sin rebajos: ' + cast(rawSalary as nvarchar) + char(10)
+								+ 'Salario con rebajos: ' + cast(netSalary as nvarchar) + char(10) + char(10)
+			from WeeklyForm W join Employee E on W.idEmployee = E.id
+			where employeeDocumentId = @employeeId and weeklyFormDate is not null;
+
+		select @salida = @salida + '***************************' + char(10) +
+								'Las planillas mensuales son:' + char(10)+ char(10);
+
+		select @salida = @salida + 'Nombre de empleado: ' + cast(employeeName as nvarchar) + char(10)
+								+ 'Id plantilla: ' + cast(W.id as nvarchar) + char(10)
+								+ 'Fecha de plantilla: ' + cast(monthlyFormDate as nvarchar) + char(10)
+								+ 'Salario sin rebajos: ' + cast(rawSalary as nvarchar) + char(10)
+								+ 'Salario con rebajos: ' + cast(netSalary as nvarchar) + char(10) + char(10)
+			from MonthlyForm W join Employee E on W.idEmployee = E.id
+			where employeeDocumentId = @employeeId and monthlyFormDate is not null;
+	
+		--set @salida = 1;
+		return 1;
+	end try
+	begin catch
+		select error_message();
+		select @salida = ERROR_MESSAGE();
+		return -1;
+	end catch
+end;
+go
+
+-- Procedure the value of an employee
+create or alter procedure wfsp_editValue
+@idvalue as int,
+@amount as money,
+@salida as int output
+
+as
+begin
+
+	set transaction isolation level read uncommitted 
+	begin transaction;
+	begin try
+
+		update JobByWorkingDayType 
+			set hourlySalary = @amount
+			where id = @idvalue;
+		commit
+		set @salida = 1;
+		return 1;
+	end try
+	begin catch
+		rollback;
+		select error_message();
+		set @salida = -1;
+		return -1;
+	end catch
+end;
+go
+
+<<<<<<< HEAD
+-- Procedure the value of an employee
+create or alter procedure wfsp_valuesQuery
+@salida as nvarchar(3000) output
+
+as
+begin
+	begin try
+
+	select @salida = @salida + 'Identificador de valor: ' + cast(J.id as nvarchar) + char(10)
+							+ 'Valor por hora: ' + cast(J.hourlySalary as nvarchar) + char(10)
+
+							+ 'Nombre del trabajo: ' + cast(JO.jobName as nvarchar) + char(10)
+							+ 'Jornada: ' + cast(W.workingDayName as nvarchar) + char(10)
+							+ 'Inicio de jornada: ' + cast(w.workingDayStart as nvarchar) + char(10)
+							+ 'Fin de jornada: ' + cast(W.workingDayEnd as nvarchar) + char(10)
+							+ char(10)
+		from (JobByWorkingDayType J inner join Job JO on J.idJob = JO.id) join WorkingDayType W on W.id = J.idWorkigDayType order by JO.id
+
+		return 1;
+	end try
+	begin catch
+		select error_message();
+		return -1;
+	end catch
+end;
+go
+=======
 ---- Procedure edit a bonus given to an employee
 --create or alter procedure dbo.wfsp_editDeduction
 --@deductionId int,
@@ -235,6 +324,7 @@ Begin
 	Return Select Top 11 Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null Order By M.monthlyFormDate 
 End
 Go
+>>>>>>> c7ee56990482db1cb1b632367e39308a61bdf266
 
 use master
 go
