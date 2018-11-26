@@ -321,10 +321,12 @@ Create or Alter Procedure wfsp_getAguinaldo
 @docIdEmpleado nvarchar(50)
 As
 Begin
-	Return Select Top 11 Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null Order By M.monthlyFormDate 
+	Declare @lastDecember date
+	Select @lastDecember = DATEFROMPARTS(DATEPART(Year, GetDate()),12,1)
+
+	Return Select Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember Order By M.monthlyFormDate Desc
 End
 Go
->>>>>>> c7ee56990482db1cb1b632367e39308a61bdf266
 
 use master
 go
