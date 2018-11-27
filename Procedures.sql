@@ -323,7 +323,7 @@ Begin
 	Declare @lastDecember date
 	Select @lastDecember = DATEFROMPARTS(DATEPART(Year, GetDate()),12,1)
 
-	--Return Select Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember Order By M.monthlyFormDate Desc
+	Return Select Top(11) Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember
 End
 Go
 
