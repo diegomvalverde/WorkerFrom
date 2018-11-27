@@ -258,7 +258,6 @@ begin
 end;
 go
 
-<<<<<<< HEAD
 -- Procedure the value of an employee
 create or alter procedure wfsp_valuesQuery
 @salida as nvarchar(3000) output
@@ -285,7 +284,7 @@ begin
 	end catch
 end;
 go
-=======
+
 ---- Procedure edit a bonus given to an employee
 --create or alter procedure dbo.wfsp_editDeduction
 --@deductionId int,
@@ -324,7 +323,7 @@ Begin
 	Declare @lastDecember date
 	Select @lastDecember = DATEFROMPARTS(DATEPART(Year, GetDate()),12,1)
 
-	Return Select Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember Order By M.monthlyFormDate Desc
+	--Return Select Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember Order By M.monthlyFormDate Desc
 End
 Go
 
