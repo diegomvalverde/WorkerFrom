@@ -83,7 +83,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		0 as rawSalary,
 		0 as netSalary
 		From @employees te Join Employee E on te.employeeDocumentId = E.employeeDocumentId
-		Where cDate = @currentDate
+		Where te.cDate = @currentDate
 
 		-- Se inserta la planilla semanal
 		Insert Into WeeklyForm (idEmployee, rawSalary, netSalary, idMonthlyForm)
@@ -92,7 +92,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		0 as netSalary,
 		M.id as idMonthlyForm
 		From @employees te Join Employee E on te.employeeDocumentId = E.employeeDocumentId Join MonthlyForm M on E.id = M.idEmployee
-		Where cDate = @currentDate and M.monthlyFormDate is null
+		Where te.cDate = @currentDate and M.monthlyFormDate is null
 
 		-- Se insertan deducciones de Empleado
 		
@@ -101,7 +101,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		idDeductionType,
 		amount
 		From @deductions td Join Employee E on td.employeeDocumentId = E.employeeDocumentId
-		Where cDate = @currentDate
+		Where td.cDate = @currentDate
 
 		-- Se insertan las horas de asistencia del archivo.
 		
@@ -133,7 +133,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		@currentDate as movementDate,
 		[dbo].[wff_calculate_salary] (E.id, @currentDate, tp.presenceStart, tp.presenceEnd, tp.idWorkingDayType) as salary 
 		From WeeklyForm W Join Employee E on W.idEmployee = E.id join @presences tp on E.employeeDocumentId = tp.employeeDocumentId 
-		Where tp.cDate = @currentDate
+		Where tp.cDate = @currentDate and W.weeklyFormDate is null
 		
 		-- Se inserta el movimiento de las horas extras.
 
@@ -143,7 +143,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		@currentDate as movementDate,
 		[dbo].[wff_calculate_extraHoursPayment] (E.id, @currentDate, tp.presenceStart, tp.presenceEnd, tp.idWorkingDayType) as salary 
 		From WeeklyForm W Join Employee E on W.idEmployee = E.id join @presences tp on E.employeeDocumentId = tp.employeeDocumentId 
-		Where tp.cDate = @currentDate and [dbo].[wff_calculate_extraHoursPayment] (E.id, @currentDate, tp.presenceStart, tp.presenceEnd, tp.idWorkingDayType) > 0
+		Where tp.cDate = @currentDate and W.weeklyFormDate is null and [dbo].[wff_calculate_extraHoursPayment] (E.id, @currentDate, tp.presenceStart, tp.presenceEnd, tp.idWorkingDayType) > 0
 
 		-- Se insertan las incapacidades del archivo.
 		
@@ -153,15 +153,17 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		@currentDate as movementDate,
 		[dbo].[wff_calculate_salary] (E.id, @currentDate, '0:00', '0:00', ti.idWorkingDayType) as salary 
 		From WeeklyForm W Join Employee E on W.idEmployee = E.id join @incapacities ti on E.employeeDocumentId = ti.employeeDocumentId 
-		Where ti.cDate = @currentDate
+		Where ti.cDate = @currentDate and W.weeklyFormDate is null
 
 		-- Movimientos Hora
 
-		Insert Into MovementJobHours
-		Select M.id as id,
-		P.id as presenceId
-		From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm Join Presence P On W.idEmployee = P.idEmployee
-		Where P.presenceDate = @currentDate
+		-- FIX!!!
+
+		--Insert Into MovementJobHours
+		--Select M.id as id,
+		--P.id as presenceId
+		--From WeeklyForm W Join FormMovements M On W.id = M.idWeeklyForm Join Presence P On W.idEmployee = P.idEmployee
+		--Where P.presenceDate = @currentDate
 
 		-- Se insertan los bonos
 		
@@ -171,7 +173,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		@currentDate as movementDate,
 		td.amount as salary 
 		From WeeklyForm W Join Employee E on W.idEmployee = E.id join @bonuses td on E.employeeDocumentId = td.employeeDocumentId 
-		Where td.cDate = @currentDate
+		Where td.cDate = @currentDate and W.weeklyFormDate is null
 
 		Update WF
 		Set rawSalary = rawSalary + R.credits, netSalary = netSalary + R.credits
@@ -205,7 +207,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 			W.id as idWeeklyForm,
 			D.idDeductionType + 5 as idMovementType,
 			@currentDate as movementDate,
-			W.rawSalary / @numOfFridays as salary
+			D.amount / @numOfFridays as salary
 			From EmployeeDeduction D Join WeeklyForm W On D.idEmployee = W.idEmployee
 			Where W.weeklyFormDate is null and D.idDeductionType > 2
 
@@ -279,5 +281,4 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 
 		Select @iLow = @iLow + 1
 	End
-	Select * From Employee
 End
