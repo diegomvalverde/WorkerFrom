@@ -16,17 +16,12 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 	Declare @bonuses Table (num int identity(1,1), employeeDocumentId nvarchar(50), amount money, cDate date)
 	Declare @incapacities Table (num int identity(1,1), employeeDocumentId nvarchar(50), idWorkingDayType int, cDate date)
 
-	Begin Try 
-		Insert Into @employees 
-			Select xCol.value('@nombre', 'varchar(50)') as employeeName,
-				xCol.value('@DocId', 'varchar(50)') as emploeeDocumentId,
-				xCol.value('@idPuesto', 'int') as idJob,
-				xCol.value('(../@Fecha)', 'date') as cDate
-			From @operations.nodes('/dataset/FechaOperacion/NuevoEmpleado') Type(xCol)
-	End Try
-	Begin Catch
-		print('Could not insert employees')
-	End Catch
+Insert Into @employees 
+		Select xCol.value('@nombre', 'varchar(50)') as employeeName,
+			xCol.value('@DocId', 'varchar(50)') as emploeeDocumentId,
+			xCol.value('@idPuesto', 'int') as idJob,
+			xCol.value('(../@Fecha)', 'date') as cDate
+		From @operations.nodes('/dataset/FechaOperacion/NuevoEmpleado') Type(xCol)
 
 	Insert into @presences
 		Select xCol.value('@DocId', 'nvarchar(50)') as employeeDocumentId,
@@ -78,7 +73,6 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 
 	Select @iLow = min(num) From @dates
 	Select @iHigh = max(num) From @dates
-
 	
 	While @iLow <= @iHigh Begin
 		Select @currentDate = cDate From @dates Where num = @iLow
@@ -181,13 +175,13 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 			If (Select I.cDate From @incapacities I Where I.num = @jLow) = @currentDate Begin
 				Select @employeeId = E.id From Employee E
 				Where E.employeeDocumentId = (Select employeeDocumentId From @incapacities I Where I.num = @jLow)
-				Select @idWorkingDayType = idWorkingDayType From @presences Where num = @jLow
+				Select @idWorkingDayType = idWorkingDayType From @incapacities Where num = @jLow
 				Select @weeklyFormId = max(id) From WeeklyForm Where idEmployee = @employeeId
 
 				Insert Into [dbo].[Presence] (idEmployee, idWorkingDayType, inhability, presenceDate,presenceStart, presenceEnd)
-				Values (@employeeId, @idWorkingDayType,  1, @currentDate, Convert(time(7), '0:00'), Convert(time(7), '0:00'))
+				Values (@employeeId, @idWorkingDayType,  1, @currentDate,'0:00', '0:00')
 
-				Select @salary = 0.6 * [dbo].[wff_calculate_salary] (@employeeId, @currentDate, Convert(time(7), '0:00'),Convert(time(7), '0:00'),@idWorkingDayType)
+				Select @salary = 0.6 * [dbo].[wff_incapacityPay] (@employeeId, @currentDate, @idWorkingDayType)
 
 				Insert Into [dbo].[FormMovements] (idWeeklyForm, idMovementType, movementDate, salary)
 				Values (@weeklyFormId, 3, @currentDate, @salary)
@@ -215,6 +209,12 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 				Where E.employeeDocumentId = (Select employeeDocumentId From @bonuses B Where B.num = @jLow)
 				Select @weeklyFormId = max(id) From WeeklyForm Where idEmployee = @employeeId
 				Select @salary = amount From @bonuses Where num = @jLow
+
+				-- Se actualizan los montos con los bonos
+				Update WeeklyForm 
+				Set rawSalary = rawSalary + @salary, netsalary = netsalary + @salary
+				Where idEmployee = @employeeId and weeklyFormDate is null
+
 				-- Se inserta el movimiento tipo BONO
 				Insert Into [dbo].[FormMovements] (idWeeklyForm, idMovementType, movementDate, salary)
 				Values (@weeklyFormId, 4, @currentDate, @salary)
@@ -256,6 +256,7 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 				-- DEDUCCIONES FIJAS
 				Begin
 					Select @amount = @amount / @numOfFridays
+
 					Insert Into FormMovements 
 					Select id as idWeeklyForm,
 					@deductionType + 5 as idDeductionType,
@@ -330,10 +331,5 @@ Create or Alter Procedure [dbo].[wfsp_IteratedSimulation] As Begin
 
 		Select @iLow = @iLow + 1
 	End
-	Select * From Employee
 End
-
-go
-
-exec wfsp_IteratedSimulation
 go
