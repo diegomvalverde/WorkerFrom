@@ -323,7 +323,7 @@ Begin
 	Declare @lastDecember date
 	Select @lastDecember = DATEFROMPARTS(DATEPART(Year, GetDate()),12,1)
 
-	Return Select Top(11) Avg(netSalary) From MonthlyForm M Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember
+	Return Select Top(11) Avg(netSalary) From MonthlyForm M join Employee E On M.idEmployee = E.id Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember and E.employeeDocumentId = @docIdEmpleado
 End
 Go
 
