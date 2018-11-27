@@ -190,7 +190,7 @@ go
 -- Procedure consult all the Forms of an employee and the movements
 create or alter procedure wfsp_employeeFormsQuery
 @employeeId nvarchar(50),
-@salida as nvarchar(3000) output
+@salida as nvarchar(max) output
 
 as
 begin
@@ -201,7 +201,7 @@ begin
 
 		select @salida = @salida + 'Nombre de empleado: ' + cast(employeeName as nvarchar) + char(10)
 								+ 'Id plantilla: ' + cast(W.id as nvarchar) + char(10)
-								+ 'Fecha de plantilla: ' + cast(weeklyFormDate as nvarchar) + char(10)
+								+ 'Fecha de planilla: ' + cast(weeklyFormDate as nvarchar) + char(10)
 								+ 'Salario sin rebajos: ' + cast(rawSalary as nvarchar) + char(10)
 								+ 'Salario con rebajos: ' + cast(netSalary as nvarchar) + char(10) + char(10)
 			from WeeklyForm W join Employee E on W.idEmployee = E.id
@@ -211,12 +211,20 @@ begin
 								'Las planillas mensuales son:' + char(10)+ char(10);
 
 		select @salida = @salida + 'Nombre de empleado: ' + cast(employeeName as nvarchar) + char(10)
-								+ 'Id plantilla: ' + cast(W.id as nvarchar) + char(10)
-								+ 'Fecha de plantilla: ' + cast(monthlyFormDate as nvarchar) + char(10)
+								+ 'Id planilla: ' + cast(W.id as nvarchar) + char(10)
+								+ 'Fecha de planilla: ' + cast(monthlyFormDate as nvarchar) + char(10)
 								+ 'Salario sin rebajos: ' + cast(rawSalary as nvarchar) + char(10)
 								+ 'Salario con rebajos: ' + cast(netSalary as nvarchar) + char(10) + char(10)
 			from MonthlyForm W join Employee E on W.idEmployee = E.id
 			where employeeDocumentId = @employeeId and monthlyFormDate is not null;
+
+		--select @salida = @salida + 'Los movimientos son: ' + char(10)
+		--select @salida + @salida + 'Fecha: ' + cast(F.movementDate as nvarchar) + char(10)
+		--						+ 'Monto: ' + cast(F.salary as nvarchar) + char(10)
+		--						+ 'Tipo de movimiento: ' + cast(F.idMovementType as nvarchar) + char(10)
+		--						+ 'Id planilla semanal: ' + cast(F.idWeeklyForm as nvarchar) + char(10)
+		--	from FormMovements F join WeeklyForm W on F.idWeeklyForm = W.id join Employee E on W.idEmployee = E.id
+		--	where @employeeId = E.employeeDocumentId
 	
 		--set @salida = 1;
 		return 1;
@@ -224,6 +232,35 @@ begin
 	begin catch
 		select error_message();
 		select @salida = ERROR_MESSAGE();
+		return -1;
+	end catch
+end;
+go
+
+-- Procedure consult all the movemets of an employee and the movements
+create or alter procedure wfsp_employeeMovemetsQuery
+@employeeId nvarchar(50),
+@salida as varchar(max) output
+
+as
+begin
+
+	begin try
+
+		select @salida = @salida + 'Fecha: ' + cast(F.movementDate as nvarchar) + char(10)
+									+ 'Descripción: ' + T.movementDescription + char(10)
+									+ 'Monto: ' + cast(F.salary as nvarchar) + char(10)
+									+ 'Id: ' + cast(F.id as nvarchar) + char(10)+ char(10)
+
+			From FormMovements F Join MovementType T On F.idMovementType = T.id Join WeeklyForm W On F.idWeeklyForm = W.id Join Employee E On E.id = W.idEmployee 
+			Where E.employeeDocumentId = @employeeId
+	
+		--Select F.id, T.movementDescription, F.movementDate, F.salary From FormMovements F Join MovementType T On F.idMovementType = T.id Join WeeklyForm W On F.idWeeklyForm = W.id Join Employee E On E.id = W.idEmployee Where E.employeeDocumentId = '758001149
+		--set @salida = 1;
+		return 1;
+	end try
+	begin catch
+		select error_message();
 		return -1;
 	end catch
 end;
@@ -241,6 +278,10 @@ begin
 	set transaction isolation level read uncommitted 
 	begin transaction;
 	begin try
+
+		insert into WorkerFormEvents(eventDescription)
+			values('Se el valor del trabajoxjornada con el identificador ' + CAST(@idvalue as nvarchar) + ', su nuevo monto es de ' +
+					CAST(@amount as nvarchar));
 
 		update JobByWorkingDayType 
 			set hourlySalary = @amount
@@ -317,13 +358,28 @@ go
 
 
 Create or Alter Procedure wfsp_getAguinaldo
-@docIdEmpleado nvarchar(50)
+@docIdEmpleado nvarchar(50),
+@salida as nvarchar(3000) output
 As
 Begin
+	declare @aguinaldo money;
+	begin try
 	Declare @lastDecember date
-	Select @lastDecember = DATEFROMPARTS(DATEPART(Year, GetDate()),12,1)
+	Select @lastDecember = DATEFROMPARTS(DATEPART(Year, GetDate())-1,12,1)
 
-	Return Select Top(11) Avg(netSalary) From MonthlyForm M join Employee E On M.idEmployee = E.id Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember and E.employeeDocumentId = @docIdEmpleado
+	--select @aguinaldo = avg(M.netSalary) From MonthlyForm M join Employee E On M.idEmployee = E.id Where M.monthlyFormDate is not null and M.monthlyFormDate > @lastDecember and E.employeeDocumentId = @docIdEmpleado
+
+	-- Select @salida = @salida
+	select @aguinaldo = avg(M.netSalary) From MonthlyForm M join Employee E On M.idEmployee = E.id Where (M.monthlyFormDate is not null) and employeeDocumentId =@docIdEmpleado and M.monthlyFormDate > @lastDecember 
+
+    select @salida = @salida + 'El aguinaldo proyectado es de: ' + cast(@aguinaldo as nvarchar) + char(10);
+
+	 return 1;
+	 end try
+	 begin catch
+		select ERROR_MESSAGE();
+		return -1
+	 end catch
 End
 Go
 
