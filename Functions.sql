@@ -36,7 +36,42 @@ As Begin
 		Select @end = @wdEnd
 	End
 
-	-- MONTO A PAGAR VARÍA SI ES DOMINGO O FERIADO TODO: Feriado
+	-- MONTO A PAGAR VARÍA SI ES DOMINGO O FERIADO
+	If DATEPART(DW, @date) = 1 or Exists(Select 1 From HolyDays H Where holyDayDate = @date) Begin
+		Select @salaryPerHour = @salaryPerHour * 2.0
+	End		
+
+	If @start > @end 
+		Select @hoursToPay = DatePart(HOUR,@end ) + 24 -  DatePart(HOUR,@start)
+	Else
+		Select @hoursToPay = DatePart(HOUR,@end ) -  DatePart(HOUR,@start)
+
+	Return @salaryPerHour * @hoursToPay
+End
+go
+
+Create or Alter Function [dbo].[wff_incapacityPay]
+	(
+	@employeeId int,
+	@date Date,
+	@workingDayType int
+	)
+Returns money
+As Begin
+	Declare @salaryPerHour money
+	Declare @start Time(7)
+	Declare @end Time(7)
+	Declare @hoursToPay int
+	Select @salaryPerHour = hourlySalary 
+	From JobByWorkingDayType J
+	Where (Select idJob From Employee E Where id = @employeeId) = J.idJob
+	and
+	J.idWorkigDayType = @workingDayType
+	
+	Select @start = workingDayStart, @end = workingDayEnd
+	From WorkingDayType Where id = @workingDayType
+
+	-- MONTO A PAGAR VARÍA SI ES DOMINGO 
 	If DATEPART(DW, @date) = 1 or Exists(Select 1 From HolyDays H Where holyDayDate = @date) Begin
 		Select @salaryPerHour = @salaryPerHour * 2.0
 	End		
