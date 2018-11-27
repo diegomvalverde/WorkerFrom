@@ -16,17 +16,12 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 	Declare @bonuses Table (num int identity(1,1), employeeDocumentId nvarchar(50), amount money, cDate date)
 	Declare @incapacities Table (num int identity(1,1), employeeDocumentId nvarchar(50), idWorkingDayType int, cDate date)
 
-	Begin Try 
-		Insert Into @employees 
-			Select xCol.value('@nombre', 'varchar(50)') as employeeName,
-				xCol.value('@DocId', 'varchar(50)') as emploeeDocumentId,
-				xCol.value('@idPuesto', 'int') as idJob,
-				xCol.value('(../@Fecha)', 'date') as cDate
-			From @operations.nodes('/dataset/FechaOperacion/NuevoEmpleado') Type(xCol)
-	End Try
-	Begin Catch
-		print('Could not insert employees')
-	End Catch
+	Insert Into @employees 
+		Select xCol.value('@nombre', 'varchar(50)') as employeeName,
+			xCol.value('@DocId', 'varchar(50)') as emploeeDocumentId,
+			xCol.value('@idPuesto', 'int') as idJob,
+			xCol.value('(../@Fecha)', 'date') as cDate
+		From @operations.nodes('/dataset/FechaOperacion/NuevoEmpleado') Type(xCol)
 
 	Insert into @presences
 		Select xCol.value('@DocId', 'nvarchar(50)') as employeeDocumentId,
@@ -151,7 +146,7 @@ Create or Alter Procedure [dbo].[wfsp_MassSimulation] As Begin
 		Select W.id as idWeeklyForm,
 		3 as idMovementType,
 		@currentDate as movementDate,
-		[dbo].[wff_calculate_salary] (E.id, @currentDate, '0:00', '0:00', ti.idWorkingDayType) as salary 
+		0.6 * [dbo].[wff_incapacityPay] (E.id, @currentDate, ti.idWorkingDayType) as salary 
 		From WeeklyForm W Join Employee E on W.idEmployee = E.id join @incapacities ti on E.employeeDocumentId = ti.employeeDocumentId 
 		Where ti.cDate = @currentDate and W.weeklyFormDate is null
 
