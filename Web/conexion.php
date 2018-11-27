@@ -1,5 +1,7 @@
 <?php
 
+//echo consultarAguinaldo('9652352136');
+
 if(isset($_POST['hidden']))
 {
     echo consultarValues();
@@ -59,6 +61,62 @@ if((isset($_POST["idEmployeeValue"])) and $_POST["idEmployeeValue"] != "" and (i
 //    echo estados($userId);
 }
 
+// Consultar los movimientos de un empleado
+if((isset($_POST["idemployeeMovements"])) and $_POST["idemployeeMovements"] != "")
+{
+    // Editar deducción
+    $idEmployeeValue = $_POST['idemployeeMovements'];
+//    echo $idEmployeeValue;
+    echo movementsQuery($idEmployeeValue);
+}
+
+// edit el valor por hora de un empleado
+if((isset($_POST["idemployeeAguinaldo"])) and $_POST["idemployeeAguinaldo"] != "")
+{
+    // Editar deducción
+    $idEmployeeValue = $_POST['idemployeeAguinaldo'];
+    echo consultarAguinaldo($idEmployeeValue);
+//    echo estados($userId);
+}
+
+// Funcion para consultar todas las planillas de un empleado
+function movementsQuery($param1)
+{
+    $servername = 'DESKTOP-LFI86EI\SQLEXPRESS';
+    $conectionInfo = array("Database"=>"WorkerForm", "UID"=>"user", "PWD"=>"password", "CharacterSet"=>"UTF-8");
+    $conn_sis = sqlsrv_connect($servername, $conectionInfo);
+
+    if($conn_sis)
+    {
+//     return "Coneccion exitosa";
+    }
+    else
+    {
+        die(print_r(sqlsrv_errors(), true));
+    }
+
+    $output='';
+    $sql = "{call wfsp_employeeMovemetsQuery(?,?)}";
+    $params = array
+    (
+        array($param1,SQLSRV_PARAM_IN),
+        array(&$output, SQLSRV_PARAM_INOUT)
+    );
+
+    $stmt = sqlsrv_query($conn_sis, $sql, $params);
+
+
+    if( $stmt === false )
+    {
+//   echo "Error in executing statement 3.\n";
+        die( print_r( sqlsrv_errors(), true));
+    }
+
+    sqlsrv_next_result($stmt);
+    sqlsrv_free_stmt($stmt);
+    sqlsrv_close($conn_sis);
+    return $output;
+}
 
 
 // Funcion para consultar clientes en la base de datos.
@@ -338,5 +396,45 @@ function consultarUsuario($param1)
   return $outSeq;
 
 }
+
+// Funcion para consultar clientes en la base de datos.
+function consultarAguinaldo($param1)
+{
+  $servername = 'DESKTOP-LFI86EI\SQLEXPRESS';
+  $conectionInfo = array("Database"=>"WorkerForm", "UID"=>"user", "PWD"=>"password", "CharacterSet"=>"UTF-8");
+  $conn_sis = sqlsrv_connect($servername, $conectionInfo);
+
+  if($conn_sis)
+  {
+    // echo "Conexion exitosa";
+  }
+  else
+  {
+      die(print_r(sqlsrv_errors(), true));
+  }
+
+  $outSeq="";
+  $sql = "{call wfsp_getAguinaldo(?,?)}";
+  $params = array
+  (
+  array($param1,SQLSRV_PARAM_IN),
+  array(&$outSeq, SQLSRV_PARAM_INOUT)
+  );
+
+  $stmt = sqlsrv_query($conn_sis, $sql, $params) or die(print_r(sqlsrv_errors(),true));
+
+  if( $stmt === false )
+  {
+  // echo "Error in executing statement 3.\n";
+  die( print_r( sqlsrv_errors(), true));
+  }
+
+  sqlsrv_next_result($stmt);
+    sqlsrv_free_stmt($stmt);
+  sqlsrv_close($conn_sis);
+  return $outSeq;
+
+}
+
 
 ?>

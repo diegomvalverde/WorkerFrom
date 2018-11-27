@@ -37,6 +37,61 @@
             );
         }
     </script>
+    <script>
+        function consultarAguinaldo()
+        {
+            $.ajax
+            (
+                {
+                    data:  $("#formularioAguinaldo").serialize(), //lo que se va a enviar
+                    url: "http://localhost/workerform/conexion.php", // The .php which recives petition
+                    type:  'post', // post method
+                    success:  function (response)
+                    {
+                        // processing php response
+                        // $("bonusTextArea").html(response);/
+                        // alert(response);
+                        if(response != "")
+                        {
+                            document.getElementById('aguinaldoTextArea').value=response;
+                        }
+                        else
+                        {
+                            alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
+                        }
+                    }
+                }
+            );
+        }
+    </script>
+    <script>
+        function consultarMovimientos()
+        {
+            $.ajax
+            (
+                {
+                    data:  $("#formularioMovimientos").serialize(), //lo que se va a enviar
+                    url: "http://localhost/workerform/conexion.php", // The .php which recives petition
+                    type:  'post', // post method
+                    success:  function (response)
+                    {
+                        // processing php response
+                        // $("bonusTextArea").html(response);/
+                        // alert(response);
+                        if(response != "")
+                        {
+                            document.getElementById('movementsTextArea').value=response;
+                        }
+                        else
+                        {
+                            alert("Por favor verifique su identificación, no coincide con ninguna en la empresa");
+                        }
+                    }
+                }
+            );
+        }
+    </script>
+
 </head>
 <body>
     <div class="container-fluid bg-dark py-2">
@@ -49,24 +104,43 @@
     <div class="container-fluid py-5 text-white">
         <div class="container">
             <div class="row">
-                <div class="col-3">
+                <div class="col-4">
+                  <label for="bonusTextArea">Consultar planillas</label>
+                  <br>
+                  <textarea rows="8" cols="45" id="bonusTextArea"></textarea>
+                  <br>
+                  <form id="formulario" method="post">
+                      <label>
+                          <input type="text" class="form-control" placeholder="Identificación" name="idemployeeJob">
+                      </label>
+
+                      <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="consultJob();">Buscar</button>
+                  </form>
                 </div>
-                <div class="col-6">
-                    <label for="bonusTextArea">Vida laboral del trabajador</label>
+                <div class="col-4">
+                    <label for="bonusTextArea">Consultar movimientos</label>
                     <br>
-                    <textarea rows="8" cols="52" id="bonusTextArea"></textarea>
+                    <textarea rows="8" cols="45" id="movementsTextArea"></textarea>
                     <br>
-                    <form id="formulario" method="post">
+                    <form id="formularioMovimientos" method="post">
                         <label>
-                            <input type="text" placeholder="Identificación" name="idemployeeJob">
+                            <input type="text" class="form-control" placeholder="Identificación" name="idemployeeMovements">
                         </label>
-                        <label>
-                            <input type="text" class="" placeholder="Fecha" id="valorDocIDQuery">
-                        </label>
-                        <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="consultJob();">Buscar</button>
+
+                        <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="consultarMovimientos();">Buscar</button>
                     </form>
                 </div>
-                <div class="col-3">
+                <div class="col-4">
+                  <label for="bonusTextArea">Aguinaldo estimado:</label>
+                  <br>
+                  <textarea rows="8" cols="40" id="aguinaldoTextArea"></textarea>
+                  <br>
+                  <form id="formularioAguinaldo" method="post">
+                      <label>
+                          <input type="text" class="form-control" placeholder="Identificación" name="idemployeeAguinaldo">
+                      </label>
+                      <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="consultarAguinaldo();">Buscar</button>
+                  </form>
                 </div>
             </div>
         </div>
